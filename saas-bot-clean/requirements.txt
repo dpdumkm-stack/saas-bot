@@ -1,0 +1,9 @@
+flask
+flask-sqlalchemy
+requests
+google-genai
+psutil
+gunicorn
+flask-limiter
+python-dotenv
+tenacity

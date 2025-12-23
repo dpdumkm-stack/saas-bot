@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan QR Code WhatsApp</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .qr-container {
+            background: #f5f5f5;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        #qrImage {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            border-radius: 10px;
+            transition: opacity 0.3s;
+        }
+
+        .loading {
+            opacity: 0.5;
+        }
+
+        .timer {
+            background: #25D366;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 15px 0;
+        }
+
+        .timer.warning {
+            background: #ff9800;
+        }
+
+        .instructions {
+            background: #f0f7ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            text-align: left;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .instructions h3 {
+            color: #2196F3;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .refresh-btn {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: #128C7E;
+        }
+
+        .refresh-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>📱 Scan QR Code</h1>
+        <p class="subtitle">Hubungkan WhatsApp dengan Bot</p>
+
+        <div class="timer" id="timer">⏱️ Refresh dalam <span id="countdown">25</span> detik</div>
+
+        <div class="qr-container">
+            <img id="qrImage" src="/api/qr?t={{ timestamp }}" alt="QR Code">
+        </div>
+
+        <button class="refresh-btn" onclick="refreshQR()">🔄 Refresh Sekarang</button>
+
+        <br>
+        <button id="resetBtn" class="refresh-btn" onclick="resetSession()"
+            style="background: #e53935; margin-top: 10px; font-size: 14px; padding: 10px 20px;">
+            ⚠️ Reset Koneksi / Masalah QR
+        </button>
+
+        <div id="status"></div>
+
+        <div class="instructions">
+            <h3>📋 Cara Scan QR Code:</h3>
+            <ol>
+                <li>Buka <strong>WhatsApp</strong> di HP Anda</li>
+                <li>Tap <strong>⋮ Menu</strong> (3 titik) → <strong>Linked Devices</strong></li>
+                <li>Tap <strong>Link a Device</strong></li>
+                <li><strong>Scan QR Code</strong> di layar ini</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let countdown = 25;
+        let countdownInterval;
+
+        function updateCountdown() {
+            countdown--;
+            document.getElementById('countdown').textContent = countdown;
+
+            const timerEl = document.getElementById('timer');
+            if (countdown <= 5) {
+                timerEl.classList.add('warning');
+            } else {
+                timerEl.classList.remove('warning');
+            }
+
+            if (countdown <= 0) {
+                refreshQR();
+            }
+        }
+
+        function refreshQR() {
+            const img = document.getElementById('qrImage');
+            img.classList.add('loading');
+
+            // Add timestamp to prevent caching
+            const timestamp = new Date().getTime();
+            img.src = `/api/qr?t=${timestamp}`;
+
+            // Reset countdown
+            countdown = 25;
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(updateCountdown, 1000);
+
+            // Show status
+            showStatus('QR Code diperbarui!', 'success');
+
+            setTimeout(() => {
+                img.classList.remove('loading');
+            }, 500);
+        }
+
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+
+            setTimeout(() => {
+                statusEl.textContent = '';
+                statusEl.className = '';
+            }, 3000);
+        }
+
+        // Check if session is already connected
+        function checkSessionStatus() {
+            fetch('/api/waha_status')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'WORKING') {
+                        showStatus('✅ WhatsApp sudah tersambung!', 'success');
+                        clearInterval(countdownInterval);
+                        document.querySelector('.qr-container').innerHTML =
+                            '<div style="padding:40px;color:#25D366;font-size:48px;">✅</div><p style="color:#25D366;font-weight:bold;font-size:18px;">WhatsApp Tersambung!</p>';
+
+                        // Show Logout Button when connected
+                        const btn = document.getElementById('resetBtn');
+                        btn.style.display = 'inline-block';
+                        btn.textContent = '🚪 Logout / Scan Ulang';
+                        btn.onclick = resetSession; // Ensure function is bound
+                    }
+                })
+                .catch(err => console.error('Status check failed:', err));
+        }
+
+        // Reset Session Logic
+        function resetSession() {
+            if (!confirm('Apakah Anda yakin ingin me-reset koneksi? Ini akan logout session saat ini dan membuat QR baru.')) return;
+
+            const btn = document.getElementById('resetBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ Mereset Sistem...';
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+
+            fetch('/api/reset_session', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showStatus('✅ Reset Berhasil! Memuat ulang...', 'success');
+                        setTimeout(() => location.reload(), 2000);
+                    } else {
+                        alert('Gagal reset: ' + data.error);
+                        btn.textContent = originalText;
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                    }
+                })
+                .catch(err => {
+                    alert('Error network: ' + err);
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                });
+        }
+
+        // Start countdown
+        countdownInterval = setInterval(updateCountdown, 1000);
+
+        // Check status every 10 seconds
+        setInterval(checkSessionStatus, 10000);
+        checkSessionStatus();
+
+        // Handle image load errors
+        document.getElementById('qrImage').onerror = function () {
+            showStatus('❌ Gagal memuat QR Code. Mencoba lagi...', 'error');
+            setTimeout(refreshQR, 3000);
+        };
+    </script>
+</body>
+
+</html>
