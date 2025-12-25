@@ -36,7 +36,15 @@ def create_app():
     with app.app_context():
         # Import models
         from app import models
-        db.create_all()
+        
+        # Create tables if they don't exist
+        # Wrapped in try-except to handle race conditions when multiple instances start
+        try:
+            db.create_all()
+        except Exception as e:
+            # If tables already exist or another instance is creating them, that's fine
+            # Log but don't crash
+            app.logger.warning(f"db.create_all() warning (expected on concurrent startup): {e}")
         
         # Initialize maintenance mode if missing
         from app.models import SystemConfig
