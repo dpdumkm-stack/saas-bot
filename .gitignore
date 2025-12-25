@@ -1,0 +1,8 @@
+.env
+.env.*
+waha.env
+instance/
+waha_data/
+__pycache__/
+*.py[cod]
+*.log

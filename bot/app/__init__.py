@@ -21,19 +21,17 @@ def create_app():
     db.init_app(app)
     limiter.init_app(app)
     
-    # SQLite optimization (only works for SQLite, silently skipped for PostgreSQL)
-    @event.listens_for(Engine, "connect")
-    def set_sqlite_pragma(dbapi_connection, connection_record):
-        try:
+    # SQLite optimization - Only register for SQLite databases
+    # Check database type from connection string before registering event listener
+    database_url = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+    if database_url.startswith('sqlite'):
+        @event.listens_for(Engine, "connect")
+        def set_sqlite_pragma(dbapi_connection, connection_record):
             cursor = dbapi_connection.cursor()
             cursor.execute("PRAGMA journal_mode=WAL")
             cursor.execute("PRAGMA synchronous=NORMAL")
             cursor.execute("PRAGMA foreign_keys=ON")
             cursor.close()
-        except Exception:
-            # PRAGMA commands are SQLite-specific, will fail on PostgreSQL
-            # This is expected and can be safely ignored
-            pass
 
     with app.app_context():
         # Import models
