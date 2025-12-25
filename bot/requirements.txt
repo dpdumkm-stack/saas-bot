@@ -7,3 +7,4 @@ gunicorn
 flask-limiter
 python-dotenv
 tenacity
+psycopg2-binary
