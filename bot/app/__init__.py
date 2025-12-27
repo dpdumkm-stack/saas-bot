@@ -72,8 +72,9 @@ def create_app():
     from app.routes.api import create_and_start_session_bg
     threading.Thread(target=create_and_start_session_bg, daemon=True).start()
     
-    # Start Polling Worker (Fallback for broken Webhooks)
-    from app.services.poller import WahaPoller
-    WahaPoller(app).start()
+    
+    # Polling disabled - using webhooks only
+    # from app.services.poller import WahaPoller
+    # WahaPoller(app).start()
     
     return app

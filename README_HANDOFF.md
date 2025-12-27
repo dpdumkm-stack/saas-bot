@@ -1,40 +1,37 @@
-# 🚀 Panduan Pemilik SaaS Bot (Handoff)
+# Handoff Notes
 
-Selamat! Sistem Bot WhatsApp Anda sudah siap digunakan.
+## Current Setup (December 2025)
 
-## 1. Status Sistem
-- **Bot Engine**: `WAHA (WebJS)` + `Python Flask`
-- **Database**: `saas_umkm.db` (SQLite)
-- **Backup**: Otomatis tiap 6 jam ke folder `backups/`
-- **Struktur**: Modular (`app/` folder)
+### Architecture
+- **Bot Platform**: Google Cloud Run (asia-southeast2 - Jakarta)
+- **WhatsApp API**: WAHA Plus hosted by SUMOPOD
+- **AI**: Google Gemini API
+- **Project**: UMKM TANGSEL (gen-lang-client-0887245898)
 
-## 2. Cara Menjalankan
-Sistem berjalan otomatis di Docker. Jika PC restart/mati:
-1. Buka Terminal/PowerShell.
-2. Masuk ke folder: `cd c:\saas_bot`
-3. Jalankan: `docker-compose up -d`
+### Service URLs
+- **Bot**: https://saas-bot-643221888510.asia-southeast2.run.app
+- **Webhook**: https://saas-bot-643221888510.asia-southeast2.run.app/webhook
+- **SUMOPOD WAHA**: https://waha-2sl8ak8iil6s.sgp-kresna.sumopod.my.id
 
-## 3. Fitur Utama
-### a. Admin Dashboard
-- **QR Scan**: `http://localhost:5000/admin/qr` (Gunakan browser di HP/PC).
-- **Reset Koneksi**: Jika bot mati, klik tombol merah **[Reset Koneksi]** di halaman QR.
+### Key Scripts
+- `deploy_to_cloudrun.ps1` - Deploy bot to Cloud Run
+- `update_sumopod_webhook.ps1` - Configure SUMOPOD webhook
+- `SUMOPOD_WEBHOOK_SETUP.md` - Complete setup guide
 
-### b. Perintah Bot (Owner)
-Kirim pesan ke nomor bot sendiri:
-- `/menu [Nama] [Harga]` : Tambah dagangan.
-- `/broadcast [Pesan] #all` : Kirim promo ke semua pelanggan.
-- `/remote` : Dapatkan link dashboard stok/harga.
-- `/mt on` : Nyalakan mode maintenance (hanya owner bisa chat).
+### Environment Variables Needed
+- `GEMINI_API_KEY` - Google Gemini API key
+- `WAHA_API_KEY` - SUMOPOD API key
+- `SUPER_ADMIN_WA` - Admin WhatsApp number
+- `DATABASE_URL` - PostgreSQL connection (optional, defaults to SQLite)
 
-### c. Pelanggan
-- Pelanggan chat -> Dijawab AI (Gemini).
-- Pelanggan kirim bukti transfer -> Dicek otomatis.
+### Migration History
+1. ❌ VPS IDCloudHost + Local WAHA (deprecated)
+2. ❌ WuzAPI (deprecated)
+3. ❌ Aldino Go-Whatsapp (deprecated)
+4. ✅ **Current**: SUMOPOD WAHA Plus + Cloud Run
 
-## 4. Troubleshooting
-Jika QR tidak muncul atau bot diam:
-1. Buka `http://localhost:5000/admin/qr`.
-2. Klik tombol **[Reset Koneksi]**.
-3. Tunggu 10-20 detik, refresh halaman.
-
----
-*Dibuat oleh Tim Developer @ 2025*
+### Notes
+- All legacy scripts removed (VPS, WuzAPI, Aldino)
+- Project cleaned to only SUMOPOD + Cloud Run files
+- Webhook must be configured in SUMOPOD to point to Cloud Run
+- Bot responds to `/ping`, `/daftar`, `/status`, `/help`

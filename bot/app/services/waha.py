@@ -1,90 +1,157 @@
 import requests
 import time
 import base64
-import random
 import logging
 from tenacity import retry, stop_after_attempt, wait_exponential
 from app.config import Config
 
 WAHA_BASE_URL = Config.WAHA_BASE_URL
+WAHA_API_KEY = Config.WAHA_API_KEY
 
-def format_nomor(chat_id): return chat_id.split('@')[0]
-def format_chat_id(nomor): return f"{nomor}@c.us" if "@" not in str(nomor) else nomor
+def get_headers():
+    h = {'Content-Type': 'application/json'}
+    if WAHA_API_KEY:
+        h['X-Api-Key'] = WAHA_API_KEY
+    return h
+
+def format_nomor(chat_id): 
+    # WAHA Standard usually expects 12345@c.us or 12345@s.whatsapp.net
+    if '@' not in str(chat_id):
+        return f"{chat_id}@c.us"
+    return chat_id
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=5))
-def kirim_waha_raw(chat_id, pesan, session="default"):
-    """Send WhatsApp message with retry logic"""
-    target = f"{chat_id}@c.us" if "@" not in str(chat_id) else chat_id
-    headers = {'X-Api-Key': Config.WAHA_API_KEY}
+def kirim_waha_raw(chat_id, message, session_name="default"):
+    """
+    Send text message via WAHA Plus
+    Endpoint: /api/sendText
+    """
     try:
-        response = requests.post(f"{WAHA_BASE_URL}/api/sendText", json={
-            "session": session, "chatId": target, "text": pesan
-        }, headers=headers, timeout=5)
-        response.raise_for_status()
+        url = f"{WAHA_BASE_URL}/api/sendText"
+        payload = {
+            "session": session_name,
+            "chatId": format_nomor(chat_id),
+            "text": message
+        }
+        
+        logging.info(f"Sending to WAHA: {chat_id}")
+        response = requests.post(url, json=payload, headers=get_headers(), timeout=10)
+        logging.info(f"WAHA Response: {response.status_code} {response.text}")
         return response
+        
     except Exception as e:
-        # logging.error(f"Failed to send WA message: {e}") # Optional log
-        raise e
+        logging.error(f"Error sending WAHA: {e}")
+        return None
 
 def create_waha_session(session_name):
-    """
-    Creates a new WAHA session using the minimal payload strategy.
-    Relies on global environment variables (WAHA_WEBHOOK_URL) defined in docker-compose.yml.
-    """
+    # WAHA Plus NOWEB: Start session with Webhook Config
     try:
-        url = f"{WAHA_BASE_URL}/api/sessions"
-        headers = {'X-Api-Key': Config.WAHA_API_KEY}
-        # Explicitly use minimal payload to force global config inheritance
-        res = requests.post(url, json={"name": session_name}, headers=headers, timeout=10)
-        return res.status_code in [200, 201]
+        # 1. Define Webhook Config
+        webhook_url = Config.WAHA_WEBHOOK_URL
+        # WAHA Plus Webhook Structure
+        webhook_config = [
+            {
+                "url": webhook_url,
+                "events": ["message", "session.status"] 
+            }
+        ]
+
+        # 2. Check if exists
+        url_all = f"{WAHA_BASE_URL}/api/sessions?all=true"
+        res = requests.get(url_all, headers=get_headers())
+        
+        if res.status_code == 200:
+            sessions = res.json()
+            for s in sessions:
+                if s.get('name') == session_name:
+                    # Optional: Update Webhook if session exists (PATCH not always available/standard, so we assume OK or user must restart session)
+                    # Ideally we would log "Session exists, ensuring webhook..." but for now we rely on initial creation or manual clean.
+                    return True 
+        
+        # 3. Start Session with Webhook
+        url_start = f"{WAHA_BASE_URL}/api/sessions"
+        payload = {
+            "name": session_name, 
+            "config": {
+                "webhooks": webhook_config
+            }
+        }
+        
+        logging.info(f"Starting WAHA Session '{session_name}' with webhook: {webhook_url}")
+        res = requests.post(url_start, json=payload, headers=get_headers())
+        if res.status_code in [200, 201]:
+             logging.info("Session created successfully.")
+             return True
+        else:
+             logging.error(f"Failed to create session: {res.text}")
+             return False
+             
     except Exception as e:
-        print(f"Error creating session: {e}")
+        logging.error(f"Error creating session: {e}")
         return False
 
 def get_waha_qr_retry(session_name, retries=5):
-    headers = {'X-Api-Key': Config.WAHA_API_KEY}
-    try: requests.post(f"{WAHA_BASE_URL}/api/sessions/{session_name}/start", headers=headers, timeout=5)
-    except: pass
-    url = f"{WAHA_BASE_URL}/api/sessions/{session_name}/auth/qr?format=image"
+    # Get QR image
+    url = f"{WAHA_BASE_URL}/api/{session_name}/auth/qr?format=image"
     for _ in range(retries):
         try:
-            time.sleep(3); res = requests.get(url, headers=headers, timeout=10)
-            if res.status_code == 200: return res.content
-        except: pass
+            res = requests.get(url, headers=get_headers(), timeout=10)
+            if res.status_code == 200 and 'image' in res.headers.get('content-type', ''):
+                return res.content
+            time.sleep(2)
+        except Exception as e:
+            logging.error(f"Error getting QR: {e}")
+            time.sleep(2)
     return None
 
-def kirim_waha(chat_id, pesan, session_name):
-    import threading
-    def task():
-        target = format_chat_id(chat_id)
-        headers = {'X-Api-Key': Config.WAHA_API_KEY}
-        time.sleep(random.uniform(1.0, 2.5))
-        try:
-            requests.post(f"{WAHA_BASE_URL}/api/sendSeen", json={"session": session_name, "chatId": target}, headers=headers)
-            requests.post(f"{WAHA_BASE_URL}/api/startTyping", json={"session": session_name, "chatId": target}, headers=headers)
-            time.sleep(min(len(pesan)/25, 5))
-            requests.post(f"{WAHA_BASE_URL}/api/stopTyping", json={"session": session_name, "chatId": target}, headers=headers)
-            requests.post(f"{WAHA_BASE_URL}/api/sendText", json={"session": session_name, "chatId": target, "text": pesan}, headers=headers)
-        except: pass
-    threading.Thread(target=task).start()
+def kirim_waha(chat_id, pesan, session_name="default"):
+    return kirim_waha_raw(chat_id, pesan, session_name)
 
-def kirim_waha_image_raw(chat_id, image_binary, caption, session_name):
+def kirim_waha_image_raw(chat_id, image_binary, caption, session_name="default"):
+    """
+    Send Image via WAHA Plus
+    Endpoint: /api/sendImage
+    """
     try:
-        b64 = base64.b64encode(image_binary).decode('utf-8')
-        payload = {"session": session_name, "chatId": format_chat_id(chat_id), "file": {"url": f"data:image/png;base64,{b64}", "filename": "qr.png"}, "caption": caption}
-        headers = {'X-Api-Key': Config.WAHA_API_KEY}
-        requests.post(f"{WAHA_BASE_URL}/api/sendImage", json=payload, headers=headers)
-    except: pass
+        url = f"{WAHA_BASE_URL}/api/sendImage"
+        # Base64 encode
+        b64_img = "data:image/jpeg;base64," + base64.b64encode(image_binary).decode('utf-8')
+        
+        payload = {
+            "session": session_name,
+            "chatId": format_nomor(chat_id),
+            "file": {
+                "mimetype": "image/jpeg",
+                "data": b64_img,
+                "filename": "image.jpg"
+            },
+            "caption": caption
+        }
+        requests.post(url, json=payload, headers=get_headers(), timeout=20)
+    except Exception as e:
+        logging.error(f"Error sending image: {e}")
 
-def kirim_waha_image_url(chat_id, url, caption, session_name):
-    try: 
-        headers = {'X-Api-Key': Config.WAHA_API_KEY}
-        requests.post(f"{WAHA_BASE_URL}/api/sendImage", json={"session": session_name, "chatId": format_chat_id(chat_id), "file": {"url": url}, "caption": caption}, headers=headers)
-    except: pass
+def kirim_waha_image_url(chat_id, url, caption, session_name="default"):
+    try:
+        # WAHA often supports URL in 'file'->'url'
+        endpoint = f"{WAHA_BASE_URL}/api/sendImage"
+        payload = {
+            "session": session_name,
+            "chatId": format_nomor(chat_id),
+            "file": {
+                "url": url,
+                "mimetype": "image/jpeg",
+                "filename": "image.jpg"
+            },
+            "caption": caption
+        }
+        requests.post(endpoint, json=payload, headers=get_headers(), timeout=20)
+    except Exception as e:
+        logging.error(f"Error sending image url: {e}")
 
-def kirim_waha_buttons(chat_id, title, footer, buttons, session_name):
-    formatted = [{"reply": {"id": b[0], "title": b[1]}} for b in buttons]
-    try: 
-        headers = {'X-Api-Key': Config.WAHA_API_KEY}
-        requests.post(f"{WAHA_BASE_URL}/api/sendButton", json={"session": session_name, "chatId": format_chat_id(chat_id), "reply_to": None, "title": title, "footer": footer, "buttons": formatted}, headers=headers)
-    except: pass
+def kirim_waha_buttons(chat_id, title, footer, buttons, session_name="default"):
+    # Fallback to text for safety or use formatting
+    msg = f"*{title}*\n{footer}\n\n"
+    for b in buttons:
+        msg += f"- {b[1]} (Ketik: {b[0]})\n"
+    kirim_waha_raw(chat_id, msg, session_name)
