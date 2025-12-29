@@ -50,13 +50,31 @@ Write-Host "  - Allow unauthenticated access (for webhooks)" -ForegroundColor Wh
 Write-Host ""
 
 # Deploy using Cloud Build + Cloud Run
+# Read DATABASE_URL from .env file securely
+$envFile = Join-Path $PSScriptRoot ".env"
+$dbUrl = ""
+if (Test-Path $envFile) {
+    $content = Get-Content $envFile
+    foreach ($line in $content) {
+        if ($line -match "^DATABASE_URL=(.+)$") {
+            $dbUrl = $matches[1]
+            break
+        }
+    }
+}
+
+if (-not $dbUrl) {
+    Write-Host "ERROR: DATABASE_URL not found in .env file!" -ForegroundColor Red
+    exit 1
+}
+
+# Deploy using Cloud Build + Cloud Run
 gcloud run deploy saas-bot `
     --source . `
     --region asia-southeast2 `
     --allow-unauthenticated `
     --platform managed `
-    --clear-base-image `
-    --set-env-vars "DATABASE_URL=postgresql://postgres.xkbijlxzejywxfbnmwgj:p8tcG%40k%3FZh.pT88@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres"
+    --set-env-vars "DATABASE_URL=$dbUrl"
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host ""
