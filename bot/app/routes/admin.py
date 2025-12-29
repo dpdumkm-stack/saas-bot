@@ -8,6 +8,16 @@ admin_bp = Blueprint('admin', __name__)
 def landing_page():
     return render_template('landing.html')
 
+@admin_bp.route('/tutorial')
+def tutorial():
+    return render_template('tutorial.html')
+
+@admin_bp.route('/success')
+def success_page():
+    return render_template('success.html')
+
+
+
 @admin_bp.route('/subscribe')
 def subscribe_page():
     return render_template('subscribe.html')

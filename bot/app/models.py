@@ -12,7 +12,18 @@ class Toko(db.Model):
     remote_pin = db.Column(db.String(10), default="1234")
     payment_bank = db.Column(db.String(200), default="BCA (Belum Diset)")
     payment_qris = db.Column(db.String(500), default="https://via.placeholder.com/300")
+    payment_qris = db.Column(db.String(500), default="https://via.placeholder.com/300")
     last_reset = db.Column(db.String(20))
+    
+    # Knowledge Base (RAG)
+    knowledge_base_file_id = db.Column(db.String(100), nullable=True)
+    knowledge_base_name = db.Column(db.String(100), nullable=True)
+    
+    # Shipping
+    shipping_origin_id = db.Column(db.Integer, nullable=True) # RajaOngkir City ID
+    shipping_couriers = db.Column(db.String(50), default="jne") # jne,tiki,pos
+    setup_step = db.Column(db.String(20), default="NONE") # NONE, LOC_SEARCH
+    
     admins = db.Column(db.Text, default="[]") 
     created_at = db.Column(db.DateTime, default=datetime.now)
     menus = db.relationship('Menu', backref='toko', lazy=True)
@@ -34,6 +45,11 @@ class Customer(db.Model):
     is_muted_until = db.Column(db.DateTime, nullable=True)
     order_status = db.Column(db.String(20), default="NONE")
     current_bill = db.Column(db.Integer, default=0)
+    
+    # Sales Engine Fields
+    last_interaction = db.Column(db.DateTime, default=datetime.now)
+    followup_status = db.Column(db.String(20), default="NONE") # NONE, PENDING, SENT
+    last_context = db.Column(db.Text, default="")
 
 class ChatLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -63,3 +79,24 @@ class BroadcastJob(db.Model):
 class SystemConfig(db.Model):
     key = db.Column(db.String(50), primary_key=True)
     value = db.Column(db.String(200))
+
+class Subscription(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    phone_number = db.Column(db.String(50), index=True, unique=True)
+    name = db.Column(db.String(100), default="Unknown")
+    category = db.Column(db.String(50)) # F&B, Jasa, etc.
+    
+    # Status Flow
+    status = db.Column(db.String(20), default="DRAFT") # DRAFT -> TRIAL -> ACTIVE (Paid) -> EXPIRED
+    tier = db.Column(db.String(20), default="STARTER") # STARTER, BUSINESS, PRO
+    
+    # Registration State
+    step = db.Column(db.Integer, default=0) # 1=AskName, 2=AskCategory
+    
+    # Payment Info
+    order_id = db.Column(db.String(100), unique=True, nullable=True)
+    payment_status = db.Column(db.String(20), default="unpaid") # unpaid, paid, expired
+    payment_url = db.Column(db.String(500), nullable=True)
+    
+    expired_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now)

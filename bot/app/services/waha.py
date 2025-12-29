@@ -35,7 +35,7 @@ def kirim_waha_raw(chat_id, message, session_name="default"):
         }
         
         logging.info(f"Sending to WAHA: {chat_id}")
-        response = requests.post(url, json=payload, headers=get_headers(), timeout=10)
+        response = requests.post(url, json=payload, headers=get_headers(), timeout=60)
         logging.info(f"WAHA Response: {response.status_code} {response.text}")
         return response
         
@@ -103,6 +103,19 @@ def get_waha_qr_retry(session_name, retries=5):
             logging.error(f"Error getting QR: {e}")
             time.sleep(2)
     return None
+
+def get_waha_pairing_code(session_name, phone_number):
+    try:
+        phone = phone_number.split('@')[0]
+        url = f"{WAHA_BASE_URL}/api/{session_name}/auth/pairing-code?phoneNumber={phone}"
+        logging.info(f"Requesting Pairing Code: {url}")
+        res = requests.get(url, headers=get_headers(), timeout=15)
+        if res.status_code == 200:
+            return res.json().get('code')
+    except Exception as e:
+        logging.error(f"Error Pairing Code: {e}")
+    return None
+
 
 def kirim_waha(chat_id, pesan, session_name="default"):
     return kirim_waha_raw(chat_id, pesan, session_name)

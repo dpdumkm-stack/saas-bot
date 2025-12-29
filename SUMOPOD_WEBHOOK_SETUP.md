@@ -10,7 +10,19 @@
 https://saas-bot-643221888510.asia-southeast2.run.app/webhook
 ```
 
-## Option 1: Via SUMOPOD Dashboard (RECOMMENDED)
+## Setup Otomatis (RECOMMENDED)
+Script ini akn mengkonfigurasi Cloud Run dan Webhook SUMOPOD sekaligus dengan aman.
+
+1.  **Jalankan Script**:
+    ```powershell
+    .\setup_sumopod_secure.ps1
+    ```
+2.  **Masukkan API Key**: Paste API Key SUMOPOD Anda saat diminta (input akan tersembunyi).
+3.  **Ikuti Prompt**: Pilih `Y` untuk update Cloud Run dan `Y` untuk set Webhook.
+
+---
+
+## Option 1: Via SUMOPOD Dashboard (Manual)
 
 Karena Anda menggunakan layanan SUMOPOD, cara termudah adalah via dashboard mereka:
 

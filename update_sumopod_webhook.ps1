@@ -20,7 +20,37 @@ if ([string]::IsNullOrWhiteSpace($API_KEY)) {
 }
 
 Write-Host ""
-Write-Host "Updating webhook configuration..." -ForegroundColor Yellow
+
+Write-Host "Mengecek sesi yang tersedia..." -ForegroundColor Yellow
+$sessionName = "default"
+
+try {
+    $sessions = Invoke-RestMethod -Uri "$SUMOPOD_URL/api/sessions?all=true" `
+        -Headers @{"X-Api-Key" = $API_KEY } `
+        -TimeoutSec 15 -ErrorAction Stop
+
+    if ($sessions -and $sessions.Count -gt 0) {
+        # Ambil session pertama
+        $sessionName = $sessions[0].name
+        Write-Host "✅ Ditemukan sesi aktif: $sessionName" -ForegroundColor Green
+    }
+    elseif ($sessions -and $sessions.name) {
+        # Single object response
+        $sessionName = $sessions.name
+        Write-Host "✅ Ditemukan sesi aktif: $sessionName" -ForegroundColor Green
+    }
+    else {
+        Write-Host "⚠️ Tidak ada sesi ditemukan. Mencoba membuat sesi 'saas-bot'..." -ForegroundColor Yellow
+        $sessionName = "saas-bot"
+        # Optional: Auto-create logic here if needed, but for now just fallback
+    }
+}
+catch {
+    Write-Host "⚠️ Gagal mengecek sesi: $($_.Exception.Message). Mengasumsikan 'default'." -ForegroundColor Yellow
+}
+
+Write-Host "Mengupdate konfigurasi webhook untuk sesi: $sessionName" -ForegroundColor Yellow
+
 
 try {
     $body = @{
@@ -34,7 +64,9 @@ try {
 
     Write-Host "Sending PATCH request..." -ForegroundColor Cyan
     
-    $response = Invoke-RestMethod -Uri "$SUMOPOD_URL/api/sessions/default" `
+    Write-Host "Mengirim request PATCH ke sesi '$sessionName'..." -ForegroundColor Cyan
+    
+    $response = Invoke-RestMethod -Uri "$SUMOPOD_URL/api/sessions/$sessionName" `
         -Method Patch `
         -Headers @{
         "X-Api-Key"    = $API_KEY
@@ -53,7 +85,7 @@ try {
     Write-Host "Verifying webhook configuration..." -ForegroundColor Yellow
     Start-Sleep -Seconds 2
     
-    $verify = Invoke-RestMethod -Uri "$SUMOPOD_URL/api/sessions/default" `
+    $verify = Invoke-RestMethod -Uri "$SUMOPOD_URL/api/sessions/$sessionName" `
         -Headers @{"X-Api-Key" = $API_KEY } `
         -TimeoutSec 15
     

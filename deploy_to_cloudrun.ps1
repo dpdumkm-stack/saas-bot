@@ -1,6 +1,13 @@
 # Deploy SaaS Bot to Cloud Run
 # Project: UMKM TANGSEL (gen-lang-client-0887245898)
 
+# Fix for gcloud python location
+$env:CLOUDSDK_PYTHON = "C:\Program Files\Google\Cloud SDK\google-cloud-sdk\platform\bundled_python\python.exe"
+if (-not (Test-Path $env:CLOUDSDK_PYTHON)) {
+    # Fallback to standard python if bundled not found
+    $env:CLOUDSDK_PYTHON = "python"
+}
+
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  Deploying SaaS Bot to Cloud Run" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
@@ -48,7 +55,8 @@ gcloud run deploy saas-bot `
     --region asia-southeast2 `
     --allow-unauthenticated `
     --platform managed `
-    --clear-base-image
+    --clear-base-image `
+    --set-env-vars "DATABASE_URL=postgresql://postgres.xkbijlxzejywxfbnmwgj:p8tcG%40k%3FZh.pT88@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres"
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host ""

@@ -5,8 +5,9 @@ import io
 import time
 import logging
 from app.config import Config
-from app.models import Toko
+from app.models import Toko, Subscription
 from app.extensions import db
+from app.services.waha import get_waha_pairing_code
 
 api_bp = Blueprint('api', __name__)
 WAHA_BASE_URL = Config.WAHA_BASE_URL
@@ -145,3 +146,28 @@ def api_update_counter():
         return jsonify({"status": "success", "new_stok": m.stok})
     except Exception as e:
         return jsonify({"error": "server error"}), 500
+
+@api_bp.route('/get-pairing-code')
+def get_pairing_code():
+    order_id = request.args.get('order_id')
+    if not order_id:
+        return jsonify({"success": False, "error": "Missing order_id"}), 400
+        
+    sub = Subscription.query.filter_by(order_id=order_id).first()
+    if not sub:
+        return jsonify({"success": False, "error": "Order not found"}), 404
+        
+    # Optional: check if paid, though maybe we allow it if active
+    if sub.payment_status != 'paid' and sub.status != 'ACTIVE':
+         return jsonify({"success": False, "error": "Payment not confirmed"}), 400
+
+    # Session naming convention must match payment_webhook.py
+    session_name = f"session_{sub.phone_number}"
+    
+    # Try to get code
+    code = get_waha_pairing_code(session_name, sub.phone_number)
+    
+    if code:
+        return jsonify({"success": True, "code": code})
+    else:
+        return jsonify({"success": False, "error": "Code not available yet"}), 503

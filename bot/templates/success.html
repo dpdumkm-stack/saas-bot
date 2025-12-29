@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran Berhasil! - SaaS Bot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #25D366;
+            --dark: #0f172a;
+            --bg: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--dark);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .icon-success {
+            font-size: 64px;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            color: var(--dark);
+        }
+
+        .code-box {
+            background: #1e293b;
+            color: #4ade80;
+            font-size: 2rem;
+            font-family: monospace;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 30px 0;
+            letter-spacing: 2px;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .step-list {
+            text-align: left;
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .step-list li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <div class="icon-success">✅</div>
+        <h1>Pembayaran Diterima!</h1>
+        <p>Terima kasih. Selesaikan langkah terakhir untuk mengaktifkan Bot.</p>
+
+        <div id="loadingArea">
+            <p>Sedang mengambil Kode Pairing...</p>
+            <div class="loader"></div>
+        </div>
+
+        <div id="codeArea" style="display:none;">
+            <p>Masukkan kode ini di HP Toko Anda:</p>
+            <div class="code-box" id="pairCode">--------</div>
+
+            <div class="step-list">
+                <ol>
+                    <li>Buka WhatsApp > Perangkat Tertaut</li>
+                    <li>Klik <b>Tautkan Perangkat</b></li>
+                    <li>Klik <b>"Tautkan dengan nomor telepon saja"</b> (Paling bawah)</li>
+                    <li>Masukkan kode di atas.</li>
+                </ol>
+            </div>
+
+            <a href="https://wa.me/6281219400496"
+                style="display:inline-block; margin-top:20px; color: var(--primary); text-decoration: none;">Kembali ke
+                Chat Bot</a>
+        </div>
+    </div>
+
+    <script>
+        // Extract order_id from URL
+        const params = new URLSearchParams(window.location.search);
+        const orderId = params.get('order_id');
+
+        if (orderId) {
+            // Poll for Code
+            fetchCode();
+        } else {
+            document.getElementById('loadingArea').innerHTML = '<p style="color:red">Order ID tidak ditemukan.</p>';
+        }
+
+        function fetchCode() {
+            fetch('/api/get-pairing-code?order_id=' + orderId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('loadingArea').style.display = 'none';
+                        document.getElementById('codeArea').style.display = 'block';
+                        document.getElementById('pairCode').innerText = data.code;
+                    } else {
+                        setTimeout(fetchCode, 3000); // Retry every 3s
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    setTimeout(fetchCode, 3000);
+                });
+        }
+    </script>
+</body>
+
+</html>

@@ -41,6 +41,94 @@
             --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
 
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-family: inherit;
+            transition: border 0.3s;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .btn-confirm {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-confirm:hover {
+            background: var(--primary-dark);
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             line-height: 1.6;
@@ -693,9 +781,9 @@
                     Khusus untuk UMKM Indonesia.
                 </p>
                 <div class="cta-buttons">
-                    <a href="https://wa.me/6281219400496?text=Halo%2C%20saya%20ingin%20coba%20gratis%2014%20hari"
+                    <a href="https://wa.me/6281219400496?text=Halo%2C%20saya%20ingin%20coba%20gratis%203%20hari"
                         class="btn btn-primary">
-                        📱 Coba Gratis 14 Hari
+                        📱 Coba Gratis 3 Hari
                     </a>
                     <a href="#pricing" class="btn btn-secondary">
                         💰 Lihat Harga
@@ -820,10 +908,10 @@
                         <li>Support via WhatsApp</li>
                         <li>1 nomor WhatsApp</li>
                     </ul>
-                    <a href="https://wa.me/6281219400496?text=Saya%20mau%20paket%20Starter" class="btn btn-secondary"
+                    <button onclick="openModal('STARTER')" class="btn btn-secondary"
                         style="width: 100%; justify-content: center;">
                         Pilih Paket
-                    </a>
+                    </button>
                 </div>
 
                 <!-- Business Plan (Featured) -->
@@ -843,10 +931,10 @@
                         <li>Template promosi gratis</li>
                         <li>Setup gratis & training</li>
                     </ul>
-                    <a href="https://wa.me/6281219400496?text=Saya%20mau%20paket%20Business" class="btn btn-primary"
+                    <button onclick="openModal('BUSINESS')" class="btn btn-primary"
                         style="width: 100%; justify-content: center;">
                         Pilih Paket
-                    </a>
+                    </button>
                 </div>
 
                 <!-- Pro Plan -->
@@ -866,10 +954,10 @@
                         <li>API integration</li>
                         <li>White-label option</li>
                     </ul>
-                    <a href="https://wa.me/6281219400496?text=Saya%20mau%20paket%20Pro" class="btn btn-secondary"
+                    <button onclick="openModal('PRO')" class="btn btn-secondary"
                         style="width: 100%; justify-content: center;">
                         Pilih Paket
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -880,9 +968,9 @@
         <div class="container">
             <div class="cta-content">
                 <h2>Siap Tingkatkan Penjualan Anda?</h2>
-                <p>Coba GRATIS 14 hari. Tidak perlu kartu kredit. Setup dalam 10 menit.</p>
+                <p>Coba GRATIS 3 hari. Tidak perlu kartu kredit. Setup dalam 10 menit.</p>
                 <div class="cta-buttons">
-                    <a href="https://wa.me/6281219400496?text=Halo%2C%20saya%20ingin%20coba%20gratis%2014%20hari"
+                    <a href="https://wa.me/6281219400496?text=Halo%2C%20saya%20ingin%20coba%20gratis%203%20hari"
                         class="btn btn-primary">
                         🚀 Mulai Gratis Sekarang
                     </a>
@@ -1009,6 +1097,40 @@
         </div>
     </footer>
 
+    <!-- Turbo Registration Modal -->
+    <div id="regModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h3 style="margin-bottom: 20px; color: var(--dark);">🚀 Setup Kilat</h3>
+
+            <input type="hidden" id="selectedTier">
+
+            <div class="form-group">
+                <label>Nama Toko / Bisnis</label>
+                <input type="text" id="storeName" class="form-input" placeholder="Contoh: Kopi Senja">
+            </div>
+
+            <div class="form-group">
+                <label>Kategori Bisnis</label>
+                <select id="storeCategory" class="form-input" style="background: white;">
+                    <option value="F&B">Makanan & Minuman 🍔</option>
+                    <option value="Retail">Toko Retail / Online 🛍️</option>
+                    <option value="Service">Jasa / Service 🛠️</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="previewSection"
+                style="display:none; background: #ecfdf5; padding: 15px; border-radius: 8px; border: 1px solid #10b981;">
+                <p style="font-size: 0.9rem; margin-bottom: 5px; color: #047857;"><b>Konfirmasi Data:</b></p>
+                <p id="previewText" style="font-size: 0.9rem; color: #065f46;"></p>
+                <p style="font-size: 0.8rem; color: #059669; margin-top: 5px;"><i>(Pastikan benar agar Kode Pairing
+                        tidak nyasar!)</i></p>
+            </div>
+
+            <button id="btnSubmit" class="btn-confirm" onclick="confirmData()">Lanjut Review</button>
+        </div>
+    </div>
+
     <script>
         // FAQ Accordion
         document.querySelectorAll('.faq-question').forEach(question => {
@@ -1059,6 +1181,66 @@
         document.querySelectorAll('.feature-card, .pricing-card, .faq-item').forEach(el => {
             observer.observe(el);
         });
+        document.querySelectorAll('.feature-card, .pricing-card, .faq-item').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Modal Logic
+        const modal = document.getElementById('regModal');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const previewSection = document.getElementById('previewSection');
+        let step = 1;
+
+        function openModal(tier) {
+            document.getElementById('selectedTier').value = tier;
+            modal.style.display = 'flex';
+            resetForm();
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        function resetForm() {
+            step = 1;
+            previewSection.style.display = 'none';
+            btnSubmit.innerText = 'Lanjut Review';
+            btnSubmit.onclick = confirmData;
+        }
+
+        function confirmData() {
+            const name = document.getElementById('storeName').value;
+            const cat = document.getElementById('storeCategory').value;
+
+            if (!name) { alert('Nama Toko wajib diisi!'); return; }
+
+            // Show Preview
+            document.getElementById('previewText').innerText = `Nama: ${name}\nKategori: ${cat}`;
+            previewSection.style.display = 'block';
+            btnSubmit.innerText = 'Yakin & Buka WA (Lalu Klik SEND ➤)';
+            btnSubmit.onclick = submitToWA;
+        }
+
+        function submitToWA() {
+            const name = document.getElementById('storeName').value;
+            const cat = document.getElementById('storeCategory').value;
+            const tier = document.getElementById('selectedTier').value;
+
+            // Construct Link
+            // Format: REG_AUTO | Nama: [Name] | Kat: [Cat] | Paket: [Tier]
+            const payload = `REG_AUTO | Nama: ${name} | Kat: ${cat} | Paket: ${tier}`;
+            const encoded = encodeURIComponent(payload);
+            const waLink = `https://wa.me/6281219400496?text=${encoded}`;
+
+            window.location.href = waLink;
+        }
+
+        // Close on outside click
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
     </script>
 </body>
 

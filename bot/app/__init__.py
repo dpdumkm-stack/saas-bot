@@ -56,10 +56,14 @@ def create_app():
     from app.routes.webhook import webhook_bp
     from app.routes.admin import admin_bp
     from app.routes.api import api_bp
+    from app.routes.payment_webhook import payment_bp
+    from app.routes.dashboard import dashboard_bp
     
     app.register_blueprint(webhook_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(payment_bp)
+    app.register_blueprint(dashboard_bp)
     
     # Start Background Workers
     from app.services.broadcast import worker_broadcast
@@ -69,8 +73,8 @@ def create_app():
     threading.Thread(target=backup_system, args=(app,), daemon=True).start()
     
     # Start Session Management Worker
-    from app.routes.api import create_and_start_session_bg
-    threading.Thread(target=create_and_start_session_bg, daemon=True).start()
+    # from app.routes.api import create_and_start_session_bg
+    # threading.Thread(target=create_and_start_session_bg, daemon=True).start()
     
     
     # Polling disabled - using webhooks only
