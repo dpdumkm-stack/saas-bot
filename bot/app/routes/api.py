@@ -157,14 +157,12 @@ def get_pairing_code():
     sub = Subscription.query.filter_by(order_id=order_id).first()
     
     # 2. Try Fallback (Extrapolate phone from order_id if not found)
-    # Order ID formats: SUB-PHONE-TIME or SUBS-TIME-LAST4
     if not sub:
         logging.warning(f"Pairing: order_id '{order_id}' not found. Trying fallback...")
         import re
-        # Extract digits from order_id to find any matching subscription
         potential_phones = re.findall(r'\d+', order_id)
         for p in potential_phones:
-            if len(p) >= 10: # Likely a phone or LID
+            if len(p) >= 10:
                 sub = Subscription.query.filter_by(phone_number=p).first()
                 if sub: 
                     logging.info(f"Fallback matched: phone {p}")
@@ -173,7 +171,6 @@ def get_pairing_code():
     if not sub:
         return jsonify({"success": False, "error": "Order not found"}), 404
         
-    # Allowed if active or paid
     if sub.payment_status != 'paid' and sub.status != 'ACTIVE':
          return jsonify({"success": False, "error": "Payment not confirmed"}), 400
 
@@ -185,30 +182,6 @@ def get_pairing_code():
     else:
         return jsonify({"success": False, "error": "Code not available yet"}), 503
 
-@api_bp.route('/clean-lid')
-def clean_lid():
-    # Helper to clean up polluted LID records
-    try:
-        invalid_subs = Subscription.query.filter(Subscription.phone_number.like('%105227%')).all()
-        count = len(invalid_subs)
-        for s in invalid_subs:
-            db.session.delete(s)
-        db.session.commit()
-        return jsonify({"success": True, "cleaned_count": count})
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
-
-@api_bp.route('/list-subs')
-def list_subs():
-    subs = Subscription.query.all()
-    return jsonify([{"order_id": s.order_id, "phone": s.phone_number, "status": s.status} for s in subs])
-
-@api_bp.route('/check-phone/<phone>')
-def check_phone(phone):
-    sub = Subscription.query.filter_by(phone_number=phone).first()
-    if sub:
-        return jsonify({"phone": sub.phone_number, "order_id": sub.order_id, "status": sub.status, "step": sub.step})
-    return jsonify({"error": "not found"}), 404
 
 
 
