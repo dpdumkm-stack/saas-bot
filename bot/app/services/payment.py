@@ -41,10 +41,11 @@ def create_payment_link(details):
             "customer_details": details.get('customer_details'),
             "item_details": details.get('item_details'),
             "callbacks": {
-                "finish": f"{request.url_root}success?order_id={details['order_id']}",
-                "unfinish": f"{request.url_root}subscribe",
-                "error": f"{request.url_root}subscribe"
+                "finish": f"https://saas-bot-643221888510.asia-southeast2.run.app/success?order_id={details['order_id']}",
+                "unfinish": f"https://saas-bot-643221888510.asia-southeast2.run.app/subscribe",
+                "error": f"https://saas-bot-643221888510.asia-southeast2.run.app/subscribe"
             },
+
             "expiry": {
                 "duration": 24,
                 "unit": "hours"

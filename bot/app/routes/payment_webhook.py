@@ -65,14 +65,15 @@ def midtrans_notification():
             Thread(target=create_waha_session, args=(session_name,)).start()
             
             # Notify master bot
+            success_url = f"https://saas-bot-643221888510.asia-southeast2.run.app/success?order_id={order_id}"
             msg_success = (
-                f"✅ **AKTIVASI BERHASIL!**\n\n"
-                f"Halo *{sub.name}*, paket Anda telah aktif.\n"
-                f"Sesi sedang disiapkan di server...\n\n"
-                f"Langkah terakhir:\n"
-                f"Silakan buka link berikut untuk mengambil **Kode Pairing** (Tautan HP):\n"
-                f"{request.url_root}success?order_id={order_id}"
+                f"✅ **PEMBAYARAN DITERIMA!**\n\n"
+                f"Terima kasih {sub.name}, akun Anda kini telah aktif! 🚀\n\n"
+                f"Silakan klik link di bawah ini untuk mengambil **KODE PAIRING** dan menyambungkan WhatsApp Anda:\n\n"
+                f"👉 {success_url}\n\n"
+                f"_(Buka link di atas, lalu masukkan kodenya di menu Perangkat Tertaut di WA Anda)_"
             )
+
             kirim_waha(f"{sub.phone_number}@c.us", msg_success, MASTER_SESSION)
             
             logging.info(f"Bot Activated successfully for {sub.phone_number}")
