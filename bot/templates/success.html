@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 
 <head>
@@ -152,21 +152,37 @@
             line-height: 1.4;
         }
 
-        .alert {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 12px;
-            padding: 12px 18px;
-            color: #fca5a5;
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
             font-size: 0.9rem;
-            margin-top: 20px;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
+            transition: all 0.2s;
         }
 
-        .alert i {
-            font-size: 1.2rem;
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: var(--primary);
+            color: #0f172a;
+        }
+
+        .btn-success:hover {
+            background: #22c55e;
+            transform: translateY(-1px);
         }
 
         .help-box {
@@ -187,11 +203,6 @@
             align-items: center;
             justify-content: space-between;
             transition: all 0.3s;
-        }
-
-        .help-toggle:hover {
-            background: rgba(59, 130, 246, 0.25);
-            border-color: rgba(59, 130, 246, 0.5);
         }
 
         .help-content {
@@ -237,8 +248,7 @@
             gap: 8px;
         }
 
-        .option-card ol,
-        .option-card ul {
+        .option-card ol {
             margin: 10px 0;
             padding-left: 20px;
             color: #cbd5e1;
@@ -260,39 +270,6 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #94a3b8;
             font-size: 0.85rem;
-        }
-
-        .btn {
-            padding: 10px 18px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2563eb;
-            transform: translateY(-1px);
-        }
-
-        .btn-success {
-            background: var(--primary);
-            color: #0f172a;
-        }
-
-        .btn-success:hover {
-            background: #22c55e;
-            transform: translateY(-1px);
         }
 
         @media (max-width: 640px) {
@@ -351,8 +328,8 @@
                 </div>
                 <div class="step-item">
                     <div class="step-num">2</div>
-                    <div class="step-text">Tap ikon <strong>â‹® (3 titik)</strong> â†’ Klik <strong>Perangkat
-                            Tertaut</strong></div>
+                    <div class="step-text">Tap ikon <strong>(3 titik)</strong> → Klik <strong>Perangkat Tertaut</strong>
+                    </div>
                 </div>
                 <div class="step-item">
                     <div class="step-num">3</div>
@@ -361,11 +338,11 @@
                 </div>
                 <div class="step-item">
                     <div class="step-num">4</div>
-                    <div class="step-text">Bot akan <strong>aktif otomatis</strong> setelah tersambung! ðŸŽ‰</div>
+                    <div class="step-text">Bot akan <strong>aktif otomatis</strong> setelah tersambung!</div>
                 </div>
             </div>
 
-            <!-- IMPORTANT WARNINGS - Always Visible! -->
+            <!-- IMPORTANT WARNINGS -->
             <div
                 style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(245, 158, 11, 0.15)); border: 2px solid rgba(239, 68, 68, 0.4); padding: 18px; border-radius: 12px; margin-top: 25px; text-align: left;">
                 <h4
@@ -377,30 +354,31 @@
                     <li>Kalau QR hilang/expired, <strong>refresh halaman ini</strong> untuk QR baru</li>
                     <li>Pastikan <strong>koneksi internet stabil</strong> di kedua device</li>
                     <li><strong>Yang scan QR = HP yang jadi bot</strong> (jangan terbalik!)</li>
-                    <li>Setelah scan sukses, <strong>jangan logout</strong> dari WhatsApp Web/Perangkat Tertaut</li>
+                    <li>Setelah scan sukses, <strong>jangan logout</strong> dari WhatsApp Web</li>
                 </ul>
             </div>
 
-            <!-- Quick Selection Buttons - NEW! -->
+            <!-- Quick Selection Buttons -->
             <div style="margin-top: 25px; text-align: left;">
                 <h4 style="color: #e2e8f0; font-size: 1rem; margin-bottom: 12px; text-align: center;">
-                    âš¡ Pilih Situasi Anda (Klik 1x):
+                    <i class="bi bi-lightning-charge-fill"></i> Pilih Situasi Anda (Klik 1x):
                 </h4>
                 <div
                     style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 15px;">
                     <button class="btn btn-success" onclick="quickSelect(1)"
                         style="padding: 14px 12px; font-size: 0.9rem; flex-direction: column; gap: 4px;">
-                        <span style="font-size: 1.5rem;">ðŸ“±ðŸ“±</span>
+                        <span style="font-size: 1.5rem;"><i class="bi bi-phone"></i> + <i
+                                class="bi bi-phone"></i></span>
                         Punya 2 HP
                     </button>
                     <button class="btn btn-primary" onclick="quickSelect(2)"
                         style="padding: 14px 12px; font-size: 0.9rem; flex-direction: column; gap: 4px;">
-                        <span style="font-size: 1.5rem;">ðŸ‘¨â€ðŸ‘©â€ðŸ‘§</span>
+                        <span style="font-size: 1.5rem;"><i class="bi bi-people-fill"></i></span>
                         HP Keluarga
                     </button>
                     <button class="btn" onclick="quickSelect(3)"
                         style="padding: 14px 12px; font-size: 0.9rem; flex-direction: column; gap: 4px; background: #a78bfa; color: white;">
-                        <span style="font-size: 1.5rem;">ðŸ’»</span>
+                        <span style="font-size: 1.5rem;"><i class="bi bi-laptop"></i></span>
                         Punya Laptop
                     </button>
                 </div>
@@ -419,24 +397,19 @@
 
                 <div class="help-content" id="helpContent">
                     <h3 style="color: #60a5fa; font-size: 1.15rem; margin-bottom: 10px; text-align: center;">
-                        ðŸ¤ Pilih Situasi Anda
+                        <i class="bi bi-hand-index-thumb"></i> Pilih Situasi Anda
                     </h3>
-                    <p style="color: #94a3b8; text-align: center; margin-bottom: 20px; font-size: 0.9rem;">
-                        Pilih salah satu situasi yang sesuai dengan kondisi Anda:
-                    </p>
 
                     <!-- Scenario 1: Punya 2 HP -->
-                    <div class="option-card scenario-box" id="scenario1"
-                        style="border: 2px solid rgba(74, 222, 128, 0.3);">
-                        <h4><i class="bi bi-phone"></i><i class="bi bi-phone" style="margin-left: -8px;"></i> Saya
-                            Punya 2 HP Sendiri</h4>
-                        <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 12px;">
-                            <strong style="color: var(--primary);">âœ… CARA PALING MUDAH!</strong> Anda beruntung!
-                        </p>
-                        <ol style="font-size: 1rem; line-height: 1.8;">
-                            <li><strong>Copy link</strong> â†’ Buka di HP kedua</li>
-                            <li><strong>QR muncul</strong> di HP kedua</li>
-                            <li><strong>Scan dari HP pertama</strong> (yang jadi bot)</li>
+                    <div class="option-card" id="scenario1" style="border: 2px solid rgba(74, 222, 128, 0.3);">
+                        <h4><i class="bi bi-phone"></i><i class="bi bi-phone" style="margin-left: -8px;"></i> Saya Punya
+                            2 HP Sendiri</h4>
+                        <ol>
+                            <li><strong>Copy link</strong> halaman ini dengan tombol di bawah</li>
+                            <li><strong>Buka link</strong> tersebut di <strong>HP kedua</strong> Anda</li>
+                            <li><strong>QR Code akan muncul</strong> di layar HP kedua</li>
+                            <li><strong>Ambil HP pertama</strong> (yang akan jadi bot)</li>
+                            <li><strong>Scan QR</strong> dari layar HP kedua</li>
                         </ol>
                         <div class="copy-box">
                             <input id="linkCopy1" class="copy-input" type="text" readonly />
@@ -444,36 +417,27 @@
                                 <i class="bi bi-clipboard"></i> Copy Link
                             </button>
                         </div>
-                        <p
-                            style="color: #fbbf24; font-size: 0.85rem; margin-top: 10px; background: rgba(245, 158, 11, 0.1); padding: 8px; border-radius: 6px;">
-                            ðŸ’¡ <strong>Ingat:</strong> HP buka link = lihat QR, HP scan QR = jadi bot
-                        </p>
                     </div>
 
                     <!-- Scenario 2: HP Keluarga -->
-                    <div class="option-card scenario-box" id="scenario2"
-                        style="border: 2px solid rgba(59, 130, 246, 0.3);">
+                    <div class="option-card" id="scenario2" style="border: 2px solid rgba(59, 130, 246, 0.3);">
                         <h4><i class="bi bi-people-fill"></i> Pakai HP Istri/Suami/Anak</h4>
-                        <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 12px;">
-                            <strong style="color: #60a5fa;">âœ… GAMPANG!</strong> Minta bantuan sebentar
-                        </p>
-
                         <div
                             style="background: rgba(59, 130, 246, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
                             <strong style="color: #60a5fa;">Cara 1: Kirim Link</strong>
-                            <ol style="margin-top: 8px; font-size: 0.95rem; line-height: 1.7;">
-                                <li><strong>Copy link</strong> â†’ Kirim ke keluarga via WA</li>
-                                <li>Mereka <strong>buka link</strong> â†’ QR muncul</li>
-                                <li><strong>Scan dari HP Anda</strong></li>
+                            <ol style="margin-top: 8px;">
+                                <li><strong>Copy link</strong> → Kirim ke HP keluarga via WhatsApp</li>
+                                <li>Minta mereka <strong>buka link</strong> tersebut</li>
+                                <li><strong>Scan QR</strong> dari HP mereka dengan HP Anda</li>
                             </ol>
                         </div>
 
                         <div style="background: rgba(74, 222, 128, 0.1); padding: 12px; border-radius: 8px;">
                             <strong style="color: var(--primary);">Cara 2: Download QR</strong>
-                            <ol style="margin-top: 8px; font-size: 0.95rem; line-height: 1.7;">
-                                <li><strong>Download QR</strong> â†’ Kirim gambar ke keluarga</li>
-                                <li>Mereka <strong>buka gambar</strong> di HP</li>
-                                <li><strong>Scan dari HP Anda</strong></li>
+                            <ol style="margin-top: 8px;">
+                                <li><strong>Download QR</strong> → Kirim gambar ke keluarga</li>
+                                <li>Minta mereka <strong>buka gambar</strong> di HP mereka</li>
+                                <li><strong>Scan QR</strong> dari layar HP mereka</li>
                             </ol>
                             <button class="btn btn-success" onclick="downloadQRCode()" style="margin-top: 10px;">
                                 <i class="bi bi-download"></i> Download QR Code
@@ -489,16 +453,13 @@
                     </div>
 
                     <!-- Scenario 3: Punya Laptop -->
-                    <div class="option-card scenario-box" id="scenario3"
-                        style="border: 2px solid rgba(168, 85, 247, 0.3);">
+                    <div class="option-card" id="scenario3" style="border: 2px solid rgba(168, 85, 247, 0.3);">
                         <h4><i class="bi bi-laptop"></i> Saya Punya Laptop/Komputer</h4>
-                        <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 12px;">
-                            <strong style="color: #a78bfa;">âœ… CARA PROFESIONAL!</strong> Seperti WhatsApp Web
-                        </p>
-                        <ol style="font-size: 1rem; line-height: 1.8;">
-                            <li><strong>Copy link</strong> â†’ Buka di laptop</li>
-                            <li><strong>QR muncul</strong> di layar laptop</li>
-                            <li><strong>Scan dari HP Anda</strong></li>
+                        <ol>
+                            <li><strong>Copy link</strong> halaman ini</li>
+                            <li><strong>Buka laptop</strong> Anda dan <strong>Paste link</strong> di browser</li>
+                            <li>QR besar akan muncul di <strong>layar laptop</strong></li>
+                            <li>Ambil <strong>HP Anda</strong>, scan QR dari layar laptop</li>
                         </ol>
                         <div class="copy-box">
                             <input id="linkCopy3" class="copy-input" type="text" readonly />
@@ -506,38 +467,14 @@
                                 <i class="bi bi-clipboard"></i> Copy Link
                             </button>
                         </div>
-                        <p
-                            style="color: #fbbf24; font-size: 0.85rem; margin-top: 10px; background: rgba(245, 158, 11, 0.1); padding: 8px; border-radius: 6px;">
-                            ðŸ’¡ <strong>Tips:</strong> Atur jarak yang pas agar kamera scan jelas
-                        </p>
                     </div>
 
-                    <!-- Scenario 4: Minta Bantuan Teman -->
-                    <div class="option-card scenario-box" id="scenario4">
-                        <h4><i class="bi bi-person-heart"></i> Minta Bantuan Teman</h4>
-                        <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 12px;">
-                            Tidak ada HP kedua atau laptop? Tidak masalah!
-                        </p>
-                        <ol style="font-size: 1rem; line-height: 1.8;">
-                            <li><strong>Copy link</strong> â†’ Kirim ke teman</li>
-                            <li>Teman <strong>buka link</strong> â†’ QR muncul</li>
-                            <li><strong>Scan dari HP Anda</strong></li>
-                        </ol>
-                        <div class="copy-box">
-                            <input id="linkCopy4" class="copy-input" type="text" readonly />
-                            <button class="btn btn-primary" onclick="copyLink('linkCopy4')">
-                                <i class="bi bi-clipboard"></i> Copy Link
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Help CTA - Only show after user reads guide -->
+                    <!-- Help CTA -->
                     <div
                         style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 14px; border-radius: 10px; margin-top: 20px; text-align: center;">
-                        <p style="color: #fca5a5; font-size: 0.95rem; margin: 0; line-height: 1.6;">
+                        <p style="color: #fca5a5; font-size: 0.95rem; margin: 0;">
                             <i class="bi bi-camera-video"></i> Sudah baca panduan tapi masih bingung?<br>
-                            <strong style="color: #60a5fa;">Hubungi admin</strong> untuk panduan via video call atau
-                            chat!
+                            <strong style="color: #60a5fa;">Hubungi admin</strong> untuk panduan video call!
                         </p>
                     </div>
                 </div>
@@ -552,114 +489,82 @@
         if (!orderId) {
             alert('Order ID tidak ditemukan di URL.');
         } else {
-            // Set current URL for all 4 copy inputs
             const currentUrl = window.location.href;
             document.getElementById('linkCopy1').value = currentUrl;
             document.getElementById('linkCopy2').value = currentUrl;
             document.getElementById('linkCopy3').value = currentUrl;
-            document.getElementById('linkCopy4').value = currentUrl;
 
-            // Load QR immediately
             loadQR();
-
-            // Auto-refresh QR every 30 seconds
             setInterval(loadQR, 30000);
         }
 
         function loadQR() {
             const qrImg = document.getElementById('qrImage');
             qrImg.src = '/api/qr?session=' + orderId + '&t=' + Date.now();
-
-            // Handle loading error
             qrImg.onerror = function () {
                 qrImg.style.display = 'none';
-                const container = document.getElementById('qrContainer');
-                container.innerHTML = '<p style="color: #ef4444; padding: 20px;">Gagal memuat QR. Refresh halaman.</p>';
+                document.getElementById('qrContainer').innerHTML = '<p style="color: #ef4444; padding: 20px;">Gagal memuat QR. Refresh halaman.</p>';
             };
         }
 
         function toggleHelp() {
             const content = document.getElementById('helpContent');
             const chevron = document.getElementById('chevron');
-
-            if (content.classList.contains('active')) {
-                content.classList.remove('active');
-                chevron.classList.remove('bi-chevron-up');
-                chevron.classList.add('bi-chevron-down');
-            } else {
-                content.classList.add('active');
-                chevron.classList.remove('bi-chevron-down');
-                chevron.classList.add('bi-chevron-up');
-            }
+            content.classList.toggle('active');
+            chevron.classList.toggle('bi-chevron-up');
+            chevron.classList.toggle('bi-chevron-down');
         }
 
-        // NEW: Quick select function
-        function quickSelect(scenarioNum) {
-            // Open help section if closed
+        function quickSelect(num) {
             const content = document.getElementById('helpContent');
             const chevron = document.getElementById('chevron');
-
             if (!content.classList.contains('active')) {
                 content.classList.add('active');
-                chevron.classList.remove('bi-chevron-down');
-                chevron.classList.add('bi-chevron-up');
+                chevron.classList.replace('bi-chevron-down', 'bi-chevron-up');
             }
-
-            // Hide all scenarios first
-            const scenarios = document.querySelectorAll('.scenario-box');
-            scenarios.forEach(s => s.style.display = 'none');
-
-            // Show only selected scenario
-            document.getElementById('scenario' + scenarioNum).style.display = 'block';
-
-            // Scroll to it smoothly
-            setTimeout(() => {
-                document.getElementById('scenario' + scenarioNum).scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'nearest'
-                });
-            }, 300);
+            // Hide all first
+            const scenarios = ['scenario1', 'scenario2', 'scenario3'];
+            scenarios.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.boxShadow = 'none';
+            });
+            // Highlight selected
+            const target = document.getElementById('scenario' + num);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                target.style.boxShadow = '0 0 15px rgba(59, 130, 246, 0.5)';
+            }
         }
 
-        function copyLink(inputId) {
+        async function copyLink(inputId) {
             const input = document.getElementById(inputId);
-            input.select();
-            input.setSelectionRange(0, 99999);
-
             try {
-                document.execCommand('copy');
-                showCopySuccess();
+                await navigator.clipboard.writeText(input.value);
+                alert('Link disalin! Kirimkan link ini ke HP lain atau buka di Laptop untuk melihat QR Code.');
             } catch (err) {
-                navigator.clipboard.writeText(input.value).then(() => {
-                    showCopySuccess();
-                });
+                input.select();
+                document.execCommand('copy');
+                alert('Link disalin!');
             }
         }
 
-        function showCopySuccess() {
-            alert('âœ… Link berhasil di-copy!\n\nSekarang:\nâœ“ Buka di HP lain / laptop, ATAU\nâœ“ Kirim ke keluarga/teman via WhatsApp\n\nJangan lupa scan QR-nya setelah muncul!');
-        }
-
-        function downloadQRCode() {
+        async function downloadQRCode() {
             const qrImg = document.getElementById('qrImage');
-
-            fetch(qrImg.src)
-                .then(res => res.blob())
-                .then(blob => {
-                    const url = window.URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = 'QR-Bot-WhatsApp.png';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    window.URL.revokeObjectURL(url);
-
-                    alert('âœ… QR Code berhasil di-download!\n\nGambar tersimpan di Galeri HP Anda.\n\nSekarang:\n1. Buka Galeri\n2. Kirim gambar QR ke keluarga/teman\n3. Minta mereka buka gambar\n4. Scan QR dari HP mereka');
-                })
-                .catch(err => {
-                    alert('âŒ Gagal download.\n\nAlternatif: Screenshot QR di layar ini, lalu kirim screenshot-nya.');
-                });
+            try {
+                const res = await fetch(qrImg.src);
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'QR_Aktivasi_Bot.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                alert('QR Code diunduh! Kirimkan ke HP keluarga untuk di-scan.');
+            } catch (err) {
+                alert('Gagal mengunduh QR Code. Silakan screenshot manual.');
+            }
         }
     </script>
 </body>
