@@ -50,12 +50,13 @@ def webhook():
     if not data:
         return jsonify({"status": "ignored", "reason": "empty"}), 200
 
-    # --- FILTER GROUP/BROADCAST EARLY ---
+    # --- FILTER GROUP/BROADCAST/NEWSLETTER EARLY ---
     msg_obj = data.get('payload', data.get('data', data))
     chat_id = msg_obj.get('from') or msg_obj.get('chatId') or ""
     
-    if "@g.us" in chat_id or "status@broadcast" in chat_id:
-        return jsonify({"status": "ignored", "reason": "group_or_broadcast"}), 200
+    if "@g.us" in chat_id or "status@broadcast" in chat_id or "@newsletter" in chat_id:
+        return jsonify({"status": "ignored", "reason": "non_personal_chat"}), 200
+
 
     logging.info(f"WEBHOOK RAW: {json.dumps(data)}")
 
@@ -119,10 +120,10 @@ def webhook():
         # Check if internal format (already has @c.us or @s.whatsapp.net)
         nomor_murni = chat_id.split('@')[0] if '@' in chat_id else chat_id
         
-        # Ignore Broadcasts / Groups already handled at top, 
-        # but kept here as secondary safety for parsed chat_id
-        if "@g.us" in chat_id or "status@broadcast" in chat_id: 
+        # Ignore Broadcasts / Groups / Newsletters already handled at top
+        if "@g.us" in chat_id or "status@broadcast" in chat_id or "@newsletter" in chat_id: 
             return "Ignored", 200
+
 
 
         # --- BUSINESS LOGIC START ---
