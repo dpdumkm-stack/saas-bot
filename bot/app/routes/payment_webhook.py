@@ -1,76 +1,83 @@
-from flask import Blueprint, request, jsonify
-from app.extensions import db
+from flask import Blueprint, request, jsonify, current_app
 from app.models import Subscription, Toko
-from app.services.waha import kirim_waha, create_waha_session
+from app.extensions import db
+from app.services.waha import create_waha_session, kirim_waha
 from app.config import Config
-import hashlib
 import logging
 from datetime import datetime, timedelta
 import uuid
 
 payment_bp = Blueprint('payment', __name__)
+MASTER_SESSION = Config.MASTER_SESSION
 
-@payment_bp.route('/payment/notification', methods=['POST'])
+@payment_bp.route('/api/payment/notification', methods=['POST'])
 def midtrans_notification():
-    """
-    Handle Midtrans HTTP Notification
-    """
+    """Handle Midtrans Webhook Notification"""
     data = request.get_json()
     if not data:
-        return jsonify({"status": "error"}), 400
+        return jsonify({"status": "no data"}), 400
         
-    logging.info(f"PAYMENT NOTIF: {data}")
+    logging.info(f"MIDTRANS NOTIF RAW: {data}")
     
     order_id = data.get('order_id')
-    status_code = data.get('status_code')
-    gross_amount = data.get('gross_amount')
-    signature_key = data.get('signature_key')
-    transaction_status = data.get('transaction_status')
+    status = data.get('transaction_status')
     
-    # 1. Start Verification (Simple Signature Check)
-    # Midtrans Signature: SHA512(order_id+status_code+gross_amount+ServerKey)
-    raw_str = f"{order_id}{status_code}{gross_amount}{Config.MIDTRANS_SERVER_KEY}"
-    my_signature = hashlib.sha512(raw_str.encode('utf-8')).hexdigest()
-    
-    if my_signature != signature_key:
-        logging.warning("Invalid Signature Payment")
-        return jsonify({"status": "error", "message": "Invalid Signature"}), 403
+    if not order_id:
+        return jsonify({"status": "no order_id"}), 400
         
-    # 2. Update Database
     sub = Subscription.query.filter_by(order_id=order_id).first()
     if not sub:
-        logging.warning(f"Order ID Not Found: {order_id}")
-        return jsonify({"status": "error", "message": "Order not found"}), 404
+        logging.error(f"Subscription not found for order_id: {order_id}")
+        return jsonify({"status": "not found"}), 404
         
-    if transaction_status in ['capture', 'settlement']:
-        if sub.status != 'ACTIVE':
-            sub.status = 'ACTIVE'
+    if status in ['settlement', 'capture']:
+        # Double check status to prevent multiple activations
+        if sub.payment_status != 'paid':
             sub.payment_status = 'paid'
-            sub.expired_at = datetime.now() + timedelta(days=30)
+            sub.status = 'ACTIVE'
+            sub.active_at = datetime.now()
+            sub.expired_at = datetime.now() + timedelta(days=31)
+            sub.step = 0
             
-            # Create Toko Resource if not exists
+            session_name = f"session_{sub.phone_number}"
             toko = Toko.query.get(sub.phone_number)
             if not toko:
-                new_sess = f"session_{sub.phone_number}"
-                if create_waha_session(new_sess):
-                    new_toko = Toko(
-                        id=sub.phone_number, 
-                        nama=sub.name, 
-                        kategori=sub.category, 
-                        session_name=new_sess, 
-                        remote_token=str(uuid.uuid4())[:8]
-                    )
-                    db.session.add(new_toko)
-            
+                toko = Toko(
+                    id=sub.phone_number,
+                    nama=sub.name,
+                    kategori=sub.category,
+                    session_name=session_name,
+                    remote_token=str(uuid.uuid4())[:8],
+                    status_active=True
+                )
+                db.session.add(toko)
+            else:
+                toko.session_name = session_name
+                toko.status_active = True
+                toko.nama = sub.name # Sync name
+                
             db.session.commit()
             
-            # Notify User
-            msg = f"✅ **Pembayaran Diterima!**\n\nPaket {sub.tier} telah aktif.\nBerlaku sampai: {sub.expired_at.strftime('%d-%m-%Y')}\n\nKetik **/kode** untuk menyambungkan WhatsApp Anda."
-            kirim_waha(sub.phone_number, msg, Config.MASTER_SESSION)
+            # Start WAHA Session in background
+            from threading import Thread
+            Thread(target=create_waha_session, args=(session_name,)).start()
             
-    elif transaction_status in ['deny', 'cancel', 'expire']:
+            # Notify master bot
+            msg_success = (
+                f"✅ **AKTIVASI BERHASIL!**\n\n"
+                f"Halo *{sub.name}*, paket Anda telah aktif.\n"
+                f"Sesi sedang disiapkan di server...\n\n"
+                f"Langkah terakhir:\n"
+                f"Silakan buka link berikut untuk mengambil **Kode Pairing** (Tautan HP):\n"
+                f"{request.url_root}success?order_id={order_id}"
+            )
+            kirim_waha(f"{sub.phone_number}@c.us", msg_success, MASTER_SESSION)
+            
+            logging.info(f"Bot Activated successfully for {sub.phone_number}")
+            
+    elif status in ['expire', 'cancel', 'deny']:
         sub.payment_status = 'failed'
         db.session.commit()
-        kirim_waha(sub.phone_number, "❌ Pembayaran Gagal/Expired. Silakan daftar ulang.", Config.MASTER_SESSION)
         
     return jsonify({"status": "ok"}), 200
+
