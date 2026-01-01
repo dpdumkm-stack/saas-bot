@@ -169,6 +169,132 @@
             font-size: 1.2rem;
         }
 
+        .help-box {
+            margin-top: 25px;
+            text-align: left;
+        }
+
+        .help-toggle {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s;
+        }
+
+        .help-toggle:hover {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .help-content {
+            display: none;
+            margin-top: 15px;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .help-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .option-card {
+            background: rgba(30, 41, 59, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .option-card h4 {
+            color: #60a5fa;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .option-card ol,
+        .option-card ul {
+            margin: 10px 0;
+            padding-left: 20px;
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .copy-box {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .copy-input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: var(--primary);
+            color: #0f172a;
+        }
+
+        .btn-success:hover {
+            background: #22c55e;
+            transform: translateY(-1px);
+        }
+
         @media (max-width: 640px) {
             .card {
                 padding: 30px 20px;
@@ -181,6 +307,15 @@
             #qrImage {
                 width: 200px;
                 height: 200px;
+            }
+
+            .copy-box {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
@@ -234,6 +369,81 @@
                 <i class="bi bi-info-circle"></i>
                 Butuh bantuan? Hubungi admin via WhatsApp.
             </div>
+
+            <!-- Alternative Activation Methods -->
+            <div class="help-box">
+                <button class="help-toggle" onclick="toggleHelp()">
+                    <span><i class="bi bi-question-circle"></i> Hanya punya 1 HP atau punya Laptop? Klik di sini</span>
+                    <i class="bi bi-chevron-down" id="chevron"></i>
+                </button>
+
+                <div class="help-content" id="helpContent">
+                    <h3 style="color: #60a5fa; font-size: 1.1rem; margin-bottom: 15px;">
+                        <i class="bi bi-lightbulb"></i> Cara Alternatif Aktivasi Bot
+                    </h3>
+
+                    <!-- Opsi 1: Punya Laptop/PC -->
+                    <div class="option-card">
+                        <h4><i class="bi bi-laptop"></i> Opsi 1: Punya Laptop/PC/Tablet</h4>
+                        <ol>
+                            <li>Copy link halaman ini dengan tombol di bawah</li>
+                            <li>Buka link tersebut di <strong>laptop/PC/tablet</strong> Anda</li>
+                            <li>QR Code akan muncul di layar laptop</li>
+                            <li>Scan QR dari layar laptop menggunakan <strong>HP Anda</strong></li>
+                            <li>Bot akan aktif otomatis! 🎉</li>
+                        </ol>
+                        <div class="copy-box">
+                            <input id="linkCopy" class="copy-input" type="text" readonly />
+                            <button class="btn btn-primary" onclick="copyCurrentLink()">
+                                <i class="bi bi-clipboard"></i> Copy Link
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Opsi 2: Hanya 1 HP -->
+                    <div class="option-card">
+                        <h4><i class="bi bi-phone"></i> Opsi 2: Hanya Punya 1 HP</h4>
+                        <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 10px;">
+                            Pilih salah satu cara berikut:
+                        </p>
+
+                        <div
+                            style="background: rgba(59, 130, 246, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                            <strong style="color: #60a5fa;">Cara A: Kirim ke Teman/Keluarga</strong>
+                            <ol style="margin-top: 8px;">
+                                <li>Copy link dengan tombol di bawah</li>
+                                <li>Kirim link via WhatsApp ke <strong>teman/keluarga</strong></li>
+                                <li>Minta mereka buka link di HP mereka</li>
+                                <li>Scan QR dari HP mereka dengan HP Anda</li>
+                            </ol>
+                        </div>
+
+                        <div style="background: rgba(74, 222, 128, 0.1); padding: 12px; border-radius: 8px;">
+                            <strong style="color: var(--primary);">Cara B: Download & Kirim QR</strong>
+                            <ol style="margin-top: 8px;">
+                                <li>Download QR Code dengan tombol di bawah</li>
+                                <li>Kirim gambar QR ke teman via WhatsApp</li>
+                                <li>Minta teman membuka gambar di HP mereka</li>
+                                <li>Scan QR dari HP teman dengan HP Anda</li>
+                            </ol>
+                            <button class="btn btn-success" onclick="downloadQR()" style="margin-top: 10px;">
+                                <i class="bi bi-download"></i> Download QR Code
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tips -->
+                    <div
+                        style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); padding: 12px; border-radius: 8px; margin-top: 15px;">
+                        <strong style="color: #fbbf24;">💡 Tips:</strong>
+                        <ul style="margin-top: 8px; color: #fcd34d; font-size: 0.85rem;">
+                            <li>QR Code hanya valid selama 2 menit, jadi scan segera!</li>
+                            <li>Jika QR expired, refresh halaman ini untuk QR baru</li>
+                            <li>Pastikan koneksi internet stabil saat melakukan scan</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -244,6 +454,9 @@
         if (!orderId) {
             alert('Order ID tidak ditemukan di URL.');
         } else {
+            // Set current URL for copy
+            document.getElementById('linkCopy').value = window.location.href;
+
             // Load QR immediately
             loadQR();
 
@@ -261,6 +474,60 @@
                 const container = document.getElementById('qrContainer');
                 container.innerHTML = '<p style="color: #ef4444; padding: 20px;">Gagal memuat QR. Refresh halaman.</p>';
             };
+        }
+
+        function toggleHelp() {
+            const content = document.getElementById('helpContent');
+            const chevron = document.getElementById('chevron');
+
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                chevron.classList.remove('bi-chevron-up');
+                chevron.classList.add('bi-chevron-down');
+            } else {
+                content.classList.add('active');
+                chevron.classList.remove('bi-chevron-down');
+                chevron.classList.add('bi-chevron-up');
+            }
+        }
+
+        function copyCurrentLink() {
+            const input = document.getElementById('linkCopy');
+            input.select();
+            input.setSelectionRange(0, 99999); // For mobile
+
+            try {
+                document.execCommand('copy');
+                alert('✅ Link berhasil di-copy!\n\nSekarang:\n• Buka link di laptop, ATAU\n• Kirim ke teman via WhatsApp');
+            } catch (err) {
+                // Fallback for modern browsers
+                navigator.clipboard.writeText(input.value).then(() => {
+                    alert('✅ Link berhasil di-copy!\n\nSekarang:\n• Buka link di laptop, ATAU\n• Kirim ke teman via WhatsApp');
+                });
+            }
+        }
+
+        function downloadQR() {
+            const qrImg = document.getElementById('qrImage');
+
+            // Create download link
+            fetch(qrImg.src)
+                .then(res => res.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'whatsapp-bot-qr-code.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+
+                    alert('✅ QR Code berhasil di-download!\n\nSekarang:\n• Kirim gambar ke teman via WhatsApp\n• Minta mereka buka gambar\n• Scan dari HP teman dengan HP Anda');
+                })
+                .catch(err => {
+                    alert('❌ Gagal download QR. Coba screenshot manual.');
+                });
         }
     </script>
 </body>
