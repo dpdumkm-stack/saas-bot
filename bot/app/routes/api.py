@@ -179,3 +179,11 @@ def list_subs():
     subs = Subscription.query.all()
     return jsonify([{"order_id": s.order_id, "phone": s.phone_number, "status": s.status} for s in subs])
 
+@api_bp.route('/check-phone/<phone>')
+def check_phone(phone):
+    sub = Subscription.query.filter_by(phone_number=phone).first()
+    if sub:
+        return jsonify({"phone": sub.phone_number, "order_id": sub.order_id, "status": sub.status, "step": sub.step})
+    return jsonify({"error": "not found"}), 404
+
+
