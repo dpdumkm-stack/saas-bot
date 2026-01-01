@@ -1,4 +1,5 @@
 import midtransclient
+from flask import request
 from app.config import Config
 import logging
 import uuid
@@ -40,9 +41,16 @@ def create_payment_link(details):
             "customer_details": details.get('customer_details'),
             "item_details": details.get('item_details'),
             "callbacks": {
-                "finish": f"https://saas-bot-643221888510.asia-southeast2.run.app/success?order_id={details['order_id']}"
+                "finish": f"{request.url_root}success?order_id={details['order_id']}",
+                "unfinish": f"{request.url_root}subscribe",
+                "error": f"{request.url_root}subscribe"
+            },
+            "expiry": {
+                "duration": 24,
+                "unit": "hours"
             }
         }
+
         
         logging.info(f"Creating Midtrans Link for {details['order_id']}")
         transaction = snap.create_transaction(param)
