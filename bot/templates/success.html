@@ -246,6 +246,7 @@
         const params = new URLSearchParams(window.location.search);
         const orderId = params.get('order_id');
         let retryCount = 0;
+        let failed404Count = 0;
 
         if (orderId) {
             fetchCode();
@@ -254,11 +255,68 @@
             document.getElementById('statusMsg').style.color = "#ef4444";
         }
 
+        function switchToQRMode() {
+            const pairingSection = document.querySelector('.pairing-section');
+            pairingSection.innerHTML = `
+                <div style="text-align: center;">
+                    <div style="margin-bottom: 15px;">
+                        <i class="bi bi-qr-code" style="font-size: 2rem; color: var(--accent);"></i>
+                    </div>
+                    <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 15px;">Scan QR Code Untuk Aktivasi</h3>
+                    <div id="qrContainer" style="background: white; padding: 20px; border-radius: 12px; display: inline-block;">
+                        <img id="qrImage" src="/api/qr?session=${orderId}" style="width: 250px; height: 250px; display: block;" />
+                    </div>
+                    <p style="color: #94a3b8; margin-top: 15px; font-size: 0.9rem;">
+                        Buka WhatsApp > Perangkat Tertaut > Scan QR Code di atas
+                    </p>
+                </div>
+            `;
+
+            // Update instructions
+            const stepsSection = document.querySelector('.steps-section');
+            stepsSection.innerHTML = `
+                <h3>Cara Aktivasi via QR Code</h3>
+                <div class="step-item">
+                    <div class="step-num">1</div>
+                    <div class="step-text">Buka <strong>WhatsApp</strong> di HP Anda</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">2</div>
+                    <div class="step-text">Klik <strong>Perangkat Tertaut</strong></div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">3</div>
+                    <div class="step-text">Scan <strong>QR Code</strong> di atas dengan kamera HP</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">4</div>
+                    <div class="step-text">Bot akan aktif otomatis setelah tersambung</div>
+                </div>
+            `;
+
+            // Auto-refresh QR every 30s
+            setInterval(() => {
+                document.getElementById('qrImage').src = '/api/qr?session=' + orderId + '&t=' + Date.now();
+            }, 30000);
+        }
+
         function fetchCode() {
             retryCount++;
             fetch('/api/get-pairing-code?order_id=' + orderId)
-                .then(r => r.json())
+                .then(r => {
+                    if (r.status === 404 || r.status === 503) {
+                        failed404Count++;
+                        // After 10 failed attempts (30 seconds), switch to QR mode
+                        if (failed404Count >= 10) {
+                            switchToQRMode();
+                            return;
+                        }
+                    }
+                    return r.json();
+                })
                 .then(data => {
+                    if (!data) return; // Already switched to QR mode
+
                     if (data.success && data.code) {
                         document.getElementById('loader').style.display = 'none';
                         document.getElementById('pairingCode').style.display = 'block';
@@ -268,7 +326,7 @@
                     } else {
                         // Keep trying every 3s
                         if (retryCount > 60) { // Limit to 3 minutes
-                            document.getElementById('statusMsg').innerText = "Gagal mengambil kode Otomatis. Hubungi Admin.";
+                            switchToQRMode();
                         } else {
                             document.getElementById('statusMsg').innerText = "Sedang menyalakan server bot... (" + retryCount + ")";
                             setTimeout(fetchCode, 3000);
@@ -277,7 +335,12 @@
                 })
                 .catch(err => {
                     console.error(err);
-                    setTimeout(fetchCode, 5000);
+                    failed404Count++;
+                    if (failed404Count >= 10) {
+                        switchToQRMode();
+                    } else {
+                        setTimeout(fetchCode, 5000);
+                    }
                 });
         }
     </script>

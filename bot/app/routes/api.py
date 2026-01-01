@@ -54,18 +54,42 @@ def create_and_start_session_bg():
 def api_qr():
     """Get QR code image from WAHA with async recovery"""
     try:
+        # Check if a specific session (order_id) is requested
+        session_param = request.args.get('session')
+        
+        if session_param:
+            # Lookup subscription by order_id to get the phone number
+            sub = Subscription.query.filter_by(order_id=session_param).first()
+            if not sub:
+                # Try fallback lookup
+                import re
+                potential_phones = re.findall(r'\d+', session_param)
+                for p in potential_phones:
+                    if len(p) >= 10:
+                        sub = Subscription.query.filter_by(phone_number=p).first()
+                        if sub:
+                            break
+            
+            if sub:
+                target_session = f"session_{sub.phone_number}"
+            else:
+                return jsonify({"error": "Session not found"}), 404
+        else:
+            # Default to master session
+            target_session = MASTER_SESSION
+        
         api_key = Config.WAHA_API_KEY
         headers = {'X-Api-Key': api_key}
         
         # Check if session exists
         session_ready = False
         try:
-            chk = requests.get(f"{WAHA_BASE_URL}/api/sessions/{MASTER_SESSION}", headers=headers, timeout=5)
+            chk = requests.get(f"{WAHA_BASE_URL}/api/sessions/{target_session}", headers=headers, timeout=5)
             if chk.status_code == 200:
                 session_ready = True
                 if chk.json().get('status') == 'STOPPED':
                     threading.Thread(target=lambda: requests.post(
-                        f"{WAHA_BASE_URL}/api/sessions/{MASTER_SESSION}/start", 
+                        f"{WAHA_BASE_URL}/api/sessions/{target_session}/start", 
                         headers=headers, timeout=10
                     )).start()
         except: pass
@@ -78,9 +102,9 @@ def api_qr():
 
         # Try to get QR
         qr_urls = [
-            f"{WAHA_BASE_URL}/api/{MASTER_SESSION}/auth/qr?format=image",
-            f"{WAHA_BASE_URL}/api/sessions/{MASTER_SESSION}/auth/qr?format=image",
-            f"{WAHA_BASE_URL}/api/{MASTER_SESSION}/auth/qr"
+            f"{WAHA_BASE_URL}/api/{target_session}/auth/qr?format=image",
+            f"{WAHA_BASE_URL}/api/sessions/{target_session}/auth/qr?format=image",
+            f"{WAHA_BASE_URL}/api/{target_session}/auth/qr"
         ]
         
         for url in qr_urls:
