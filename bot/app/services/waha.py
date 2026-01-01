@@ -67,15 +67,21 @@ def create_waha_session(session_name):
             sessions = res.json()
             for s in sessions:
                 if s.get('name') == session_name:
-                    # If exists but STOPPED, start it!
-                    if s.get('status') in ['STOPPED', 'FAILED']:
-                        logging.info(f"Session '{session_name}' exists but is {s.get('status')}. Starting now...")
+                    status = s.get('status')
+                    if status == 'FAILED':
+                        logging.warning(f"Session '{session_name}' is FAILED. Deleting and recreating...")
+                        requests.delete(f"{WAHA_BASE_URL}/api/sessions/{session_name}", headers=get_headers())
+                        time.sleep(1)
+                        break # Go to create logic
+                    elif status == 'STOPPED':
+                        logging.info(f"Session '{session_name}' is STOPPED. Starting...")
                         requests.post(f"{WAHA_BASE_URL}/api/sessions/{session_name}/start", headers=get_headers())
-                    return True 
+                        return True
+                    else:
+                        return True 
         
-        # 3. Start Session with Webhook (If not exists)
-        url_start = f"{WAHA_BASE_URL}/api/sessions"
-
+        # 3. Create Session with Webhook
+        url_create = f"{WAHA_BASE_URL}/api/sessions"
         payload = {
             "name": session_name, 
             "config": {
@@ -83,14 +89,17 @@ def create_waha_session(session_name):
             }
         }
         
-        logging.info(f"Starting WAHA Session '{session_name}' with webhook: {webhook_url}")
-        res = requests.post(url_start, json=payload, headers=get_headers())
+        logging.info(f"Creating Session '{session_name}'...")
+        res = requests.post(url_create, json=payload, headers=get_headers())
         if res.status_code in [200, 201]:
-             logging.info("Session created successfully.")
+             logging.info("Session created. Starting it...")
+             # Usually POST /sessions automatically starts it in some config, but let's be explicit
+             requests.post(f"{WAHA_BASE_URL}/api/sessions/{session_name}/start", headers=get_headers())
              return True
         else:
              logging.error(f"Failed to create session: {res.text}")
              return False
+
              
     except Exception as e:
         logging.error(f"Error creating session: {e}")
