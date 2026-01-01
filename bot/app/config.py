@@ -19,7 +19,7 @@ class Config:
     WAHA_API_KEY = os.environ.get('WAHA_API_KEY', '')  # Required for SUMOPOD API access
     
     # Session Configuration
-    MASTER_SESSION = 'session_01kdfws3d40zcnvhd6xp7qpm0f'
+    MASTER_SESSION = os.environ.get('MASTER_SESSION', 'default')
     TARGET_LIMIT_USER = int(os.environ.get('TARGET_LIMIT_USER', '500'))
     WARNING_THRESHOLD = int(os.environ.get('WARNING_THRESHOLD', '450'))
     

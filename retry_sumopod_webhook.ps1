@@ -1,8 +1,14 @@
 # Try Different SUMOPOD Webhook Config Approaches
-$API_KEY = "PxXAFORGhD2JnP8aBL6hGhvH4tbBi4SU"
 $SUMOPOD_URL = "https://waha-2sl8ak8iil6s.sgp-kresna.sumopod.my.id"
-$SESSION_NAME = "saas-bot"
+$SESSION_NAME = "default"
 $WEBHOOK_URL = "https://saas-bot-643221888510.asia-southeast2.run.app/webhook"
+
+# Ask for API key securely
+$API_KEY = Read-Host "Masukkan SUMOPOD API Key"
+if ([string]::IsNullOrWhiteSpace($API_KEY)) {
+    Write-Host "❌ API key tidak boleh kosong!" -ForegroundColor Red
+    exit 1
+}
 
 Write-Host "Trying alternative webhook configuration methods..." -ForegroundColor Cyan
 Write-Host ""

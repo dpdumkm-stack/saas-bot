@@ -781,10 +781,9 @@
                     Khusus untuk UMKM Indonesia.
                 </p>
                 <div class="cta-buttons">
-                    <a href="https://wa.me/6281219400496?text=Halo%2C%20saya%20ingin%20coba%20gratis%203%20hari"
-                        class="btn btn-primary">
-                        📱 Coba Gratis 3 Hari
-                    </a>
+                    <button onclick="openModal('TRIAL')" class="btn btn-primary">
+                        🚀 Coba Gratis 3 Hari
+                    </button>
                     <a href="#pricing" class="btn btn-secondary">
                         💰 Lihat Harga
                     </a>
@@ -827,10 +826,37 @@
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">🤖</div>
-                    <h3>AI Chat Pintar</h3>
+                    <h3>AI Chat Otomatis</h3>
                     <p>
-                        Balas chat pelanggan otomatis dengan AI Gemini. Jawab pertanyaan produk,
-                        harga, dan ketersediaan stok secara real-time.
+                        Balas chat pelanggan 24/7 dengan AI Gemini. Jawab pertanyaan produk,
+                        harga, dan stok secara natural seperti manusia.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📸</div>
+                    <h3>Analisa Gambar AI</h3>
+                    <p>
+                        Bot bisa membaca bukti transfer (ASLI/PALSU) dan mengenali foto produk
+                        yang dikirim pelanggan. Canggih & Aman!
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📢</div>
+                    <h3>Broadcast & Promo</h3>
+                    <p>
+                        Kirim pesan promo ke ribuan pelanggan dengan sekali klik.
+                        Targetkan pelanggan spesifik untuk konversi maksimal.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Hybrid Turbo Setup</h3>
+                    <p>
+                        Daftar dan aktifkan bot dalam 2 menit. Cukup input nomor HP dan
+                        masukkan Kode Pairing. Tanpa scan QR error!
                     </p>
                 </div>
 
@@ -838,44 +864,17 @@
                     <div class="feature-icon">📦</div>
                     <h3>Manajemen Produk</h3>
                     <p>
-                        Kelola katalog produk langsung dari WhatsApp. Tambah, edit, dan hapus produk
-                        tanpa perlu platform lain.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <h3>Tracking Pesanan</h3>
-                    <p>
-                        Pantau semua pesanan pelanggan. Update status pesanan dan kirim notifikasi
-                        otomatis ke customer.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">👥</div>
-                    <h3>Database Customer</h3>
-                    <p>
-                        Simpan data pelanggan otomatis. Lihat riwayat chat dan pesanan untuk
-                        layanan yang lebih personal.
+                        Kelola katalog, stok, dan harga langsung dari chat WhatsApp.
+                        Pelanggan bisa lihat menu lengkap dengan ketik /menu.
                     </p>
                 </div>
 
                 <div class="feature-card">
                     <div class="feature-icon">📈</div>
-                    <h3>Dashboard Analytics</h3>
+                    <h3>Dashboard & Laporan</h3>
                     <p>
-                        Monitor performa toko Anda. Lihat statistik pelanggan, produk terlaris,
-                        dan insight penjualan.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">🔒</div>
-                    <h3>Aman & Terpercaya</h3>
-                    <p>
-                        Data tersimpan aman dengan enkripsi. Backup otomatis setiap hari.
-                        99.9% uptime guarantee.
+                        Monitor performa toko, jumlah chat, dan omset penjualan
+                        melalui dashboard web yang lengkap.
                     </p>
                 </div>
             </div>
@@ -970,10 +969,9 @@
                 <h2>Siap Tingkatkan Penjualan Anda?</h2>
                 <p>Coba GRATIS 3 hari. Tidak perlu kartu kredit. Setup dalam 10 menit.</p>
                 <div class="cta-buttons">
-                    <a href="https://wa.me/6281219400496?text=Halo%2C%20saya%20ingin%20coba%20gratis%203%20hari"
-                        class="btn btn-primary">
+                    <button onclick="openModal('TRIAL')" class="btn btn-primary">
                         🚀 Mulai Gratis Sekarang
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1106,8 +1104,13 @@
             <input type="hidden" id="selectedTier">
 
             <div class="form-group">
+                <label>Nomor WhatsApp (Ex: 0812...)</label>
+                <input type="tel" id="storePhone" class="form-input" placeholder="08123456789 (Nomor Bot)" required>
+            </div>
+
+            <div class="form-group">
                 <label>Nama Toko / Bisnis</label>
-                <input type="text" id="storeName" class="form-input" placeholder="Contoh: Kopi Senja">
+                <input type="text" id="storeName" class="form-input" placeholder="Contoh: Kopi Senja" required>
             </div>
 
             <div class="form-group">
@@ -1124,10 +1127,12 @@
                 <p style="font-size: 0.9rem; margin-bottom: 5px; color: #047857;"><b>Konfirmasi Data:</b></p>
                 <p id="previewText" style="font-size: 0.9rem; color: #065f46;"></p>
                 <p style="font-size: 0.8rem; color: #059669; margin-top: 5px;"><i>(Pastikan benar agar Kode Pairing
-                        tidak nyasar!)</i></p>
+                        bisa dikirim!)</i></p>
             </div>
 
             <button id="btnSubmit" class="btn-confirm" onclick="confirmData()">Lanjut Review</button>
+            <p id="loadingText" style="display:none; text-align:center; color: var(--primary); margin-top:10px;">
+                Memproses...</p>
         </div>
     </div>
 
@@ -1181,14 +1186,12 @@
         document.querySelectorAll('.feature-card, .pricing-card, .faq-item').forEach(el => {
             observer.observe(el);
         });
-        document.querySelectorAll('.feature-card, .pricing-card, .faq-item').forEach(el => {
-            observer.observe(el);
-        });
 
         // Modal Logic
         const modal = document.getElementById('regModal');
         const btnSubmit = document.getElementById('btnSubmit');
         const previewSection = document.getElementById('previewSection');
+        const loadingText = document.getElementById('loadingText');
         let step = 1;
 
         function openModal(tier) {
@@ -1204,35 +1207,57 @@
         function resetForm() {
             step = 1;
             previewSection.style.display = 'none';
+            loadingText.style.display = 'none';
+            btnSubmit.style.display = 'block';
             btnSubmit.innerText = 'Lanjut Review';
             btnSubmit.onclick = confirmData;
         }
 
         function confirmData() {
+            const phone = document.getElementById('storePhone').value;
             const name = document.getElementById('storeName').value;
             const cat = document.getElementById('storeCategory').value;
 
-            if (!name) { alert('Nama Toko wajib diisi!'); return; }
+            if (!phone || !name) { alert('Mohon lengkapi semua data!'); return; }
 
             // Show Preview
-            document.getElementById('previewText').innerText = `Nama: ${name}\nKategori: ${cat}`;
+            document.getElementById('previewText').innerText = `HP: ${phone}\nNama: ${name}\nKategori: ${cat}`;
             previewSection.style.display = 'block';
-            btnSubmit.innerText = 'Yakin & Buka WA (Lalu Klik SEND ➤)';
-            btnSubmit.onclick = submitToWA;
+            btnSubmit.innerText = '✅ Benar, Lanjut Pembayaran';
+            btnSubmit.onclick = submitRegistration;
         }
 
-        function submitToWA() {
+        async function submitRegistration() {
+            const phone = document.getElementById('storePhone').value;
             const name = document.getElementById('storeName').value;
             const cat = document.getElementById('storeCategory').value;
             const tier = document.getElementById('selectedTier').value;
 
-            // Construct Link
-            // Format: REG_AUTO | Nama: [Name] | Kat: [Cat] | Paket: [Tier]
-            const payload = `REG_AUTO | Nama: ${name} | Kat: ${cat} | Paket: ${tier}`;
-            const encoded = encodeURIComponent(payload);
-            const waLink = `https://wa.me/6281219400496?text=${encoded}`;
+            btnSubmit.style.display = 'none';
+            loadingText.style.display = 'block';
 
-            window.location.href = waLink;
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ phone, name, category: cat, tier })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success' && result.redirect_url) {
+                    window.location.href = result.redirect_url;
+                } else {
+                    alert('Gagal: ' + (result.message || 'Error tidak diketahui'));
+                    resetForm();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan koneksi.');
+                resetForm();
+            }
         }
 
         // Close on outside click

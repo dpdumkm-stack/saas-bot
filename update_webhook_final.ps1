@@ -23,7 +23,7 @@ if ([string]::IsNullOrWhiteSpace($API_KEY)) {
 }
 
 $SUMOPOD_URL = "https://waha-2sl8ak8iil6s.sgp-kresna.sumopod.my.id"
-$SESSION_NAME = "saas-bot"
+$SESSION_NAME = "default"
 $WEBHOOK_URL = "https://saas-bot-643221888510.asia-southeast2.run.app/webhook"
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  Update SUMOPOD Webhook" -ForegroundColor Cyan

@@ -40,8 +40,8 @@ try {
         Write-Host "✅ Ditemukan sesi aktif: $sessionName" -ForegroundColor Green
     }
     else {
-        Write-Host "⚠️ Tidak ada sesi ditemukan. Mencoba membuat sesi 'saas-bot'..." -ForegroundColor Yellow
-        $sessionName = "saas-bot"
+        Write-Host "⚠️ Tidak ada sesi ditemukan. Mengasumsikan 'default'." -ForegroundColor Yellow
+        $sessionName = "default"
         # Optional: Auto-create logic here if needed, but for now just fallback
     }
 }

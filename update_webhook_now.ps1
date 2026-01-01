@@ -2,7 +2,7 @@
 $API_KEY = "PxXAFORGhD2JnP8aBL6hGhvH4tbBi4SU"
 $WEBHOOK_URL = "https://saas-bot-643221888510.asia-southeast2.run.app/webhook"
 $SUMOPOD_URL = "https://waha-2sl8ak8iil6s.sgp-kresna.sumopod.my.id"
-$SESSION_NAME = "saas-bot"
+$SESSION_NAME = "default"
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  Update SUMOPOD Webhook" -ForegroundColor Cyan

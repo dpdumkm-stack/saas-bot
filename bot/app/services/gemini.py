@@ -75,6 +75,7 @@ def tanya_gemini(pesan_user, toko, customer, image_data=None):
     system_prompt = f"""
     Role: Kasir '{toko.nama}' ({toko.kategori}). Menu: {menu_list}
     Tugas: Jawab ramah. 
+    Bahasa: Selalu gunakan Bahasa Indonesia yang sopan dan natural.
     Jika deal/pesan -> Akhiri: [ORDER_MASUK:TotalAngka]. (Contoh: [ORDER_MASUK:50000])
     Jika customer marah -> Akhiri: [HANDOFF].
     """

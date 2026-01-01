@@ -50,23 +50,28 @@ Write-Host "  - Allow unauthenticated access (for webhooks)" -ForegroundColor Wh
 Write-Host ""
 
 # Deploy using Cloud Build + Cloud Run
-# Read DATABASE_URL from .env file securely
+# Read env vars from .env file securely
 $envFile = Join-Path $PSScriptRoot ".env"
 $dbUrl = ""
+$geminiKey = ""
+$wahaKey = ""
+$superAdmin = ""
+
 if (Test-Path $envFile) {
     $content = Get-Content $envFile
     foreach ($line in $content) {
-        if ($line -match "^DATABASE_URL=(.+)$") {
-            $dbUrl = $matches[1]
-            break
-        }
+        if ($line -match "^DATABASE_URL=(.+)$") { $dbUrl = $matches[1] }
+        if ($line -match "^GEMINI_API_KEY=(.+)$") { $geminiKey = $matches[1] }
+        if ($line -match "^WAHA_API_KEY=(.+)$") { $wahaKey = $matches[1] }
+        if ($line -match "^SUPER_ADMIN_WA=(.+)$") { $superAdmin = $matches[1] }
     }
 }
 
-if (-not $dbUrl) {
-    Write-Host "ERROR: DATABASE_URL not found in .env file!" -ForegroundColor Red
-    exit 1
-}
+if (-not $dbUrl) { Write-Host "WARNING: DATABASE_URL not found in .env" -ForegroundColor Yellow }
+if (-not $geminiKey) { Write-Host "WARNING: GEMINI_API_KEY not found in .env" -ForegroundColor Yellow }
+
+# Construct Env Vars String
+$envVars = "DATABASE_URL=$dbUrl,GEMINI_API_KEY=$geminiKey,WAHA_API_KEY=$wahaKey,SUPER_ADMIN_WA=$superAdmin"
 
 # Deploy using Cloud Build + Cloud Run
 gcloud run deploy saas-bot `
@@ -74,7 +79,7 @@ gcloud run deploy saas-bot `
     --region asia-southeast2 `
     --allow-unauthenticated `
     --platform managed `
-    --set-env-vars "DATABASE_URL=$dbUrl"
+    --set-env-vars "$envVars"
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host ""

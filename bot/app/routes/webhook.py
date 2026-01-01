@@ -50,15 +50,22 @@ def webhook():
     if not data:
         return jsonify({"status": "ignored", "reason": "empty"}), 200
 
+    # --- FILTER GROUP/BROADCAST EARLY ---
+    msg_obj = data.get('payload', data.get('data', data))
+    chat_id = msg_obj.get('from') or msg_obj.get('chatId') or ""
+    
+    if "@g.us" in chat_id or "status@broadcast" in chat_id:
+        return jsonify({"status": "ignored", "reason": "group_or_broadcast"}), 200
+
     logging.info(f"WEBHOOK RAW: {json.dumps(data)}")
 
     # 1.5 TRIGGER SALES ENGINE (Lazy Scheduler)
-    # Fire and forget background task to check for follow-ups
     try:
         app_ctx = current_app._get_current_object()
         threading.Thread(target=check_and_send_followups, args=(app_ctx,)).start()
     except Exception as e:
         logging.error(f"Scheduler Trigger Error: {e}")
+
 
     # 2. Parse Go-Whatsapp Format
     # Format: { "messages": [ { "key": { "remoteJid": "..." }, "message": { "conversation": "..." } } ] }
@@ -112,10 +119,11 @@ def webhook():
         # Check if internal format (already has @c.us or @s.whatsapp.net)
         nomor_murni = chat_id.split('@')[0] if '@' in chat_id else chat_id
         
-        # Ignore Broadcasts / Groups if not needed
+        # Ignore Broadcasts / Groups already handled at top, 
+        # but kept here as secondary safety for parsed chat_id
         if "@g.us" in chat_id or "status@broadcast" in chat_id: 
-            logging.info(f"Ignoring group/broadcast message from {chat_id}")
             return "Ignored", 200
+
 
         # --- BUSINESS LOGIC START ---
         

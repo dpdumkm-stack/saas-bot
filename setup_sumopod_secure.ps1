@@ -1,5 +1,5 @@
-$ErrorActionPreference = "Stop"
 
+$ErrorActionPreference = "Stop"
 function Show-Header {
     Clear-Host
     Write-Host "================================================" -ForegroundColor Cyan

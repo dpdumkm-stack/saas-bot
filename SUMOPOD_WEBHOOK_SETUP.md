@@ -112,7 +112,7 @@ Setelah webhook di-set, test dengan:
 ## Informasi Penting
 
 - **SUMOPOD URL**: `https://waha-2sl8ak8iil6s.sgp-kresna.sumopod.my.id`
-- **Session Name**: `default` (atau sesuai yang Anda gunakan)
+- **Session Name**: `default` (paling umum di SUMOPOD)
 - **Webhook URL**: `https://saas-bot-643221888510.asia-southeast2.run.app/webhook`
 - **Bot Service**: Cloud Run (asia-southeast2)
 
