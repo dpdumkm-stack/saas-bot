@@ -47,14 +47,16 @@ def create_waha_session(session_name):
     # WAHA Plus NOWEB: Start session with Webhook Config
     try:
         # 1. Define Webhook Config
-        webhook_url = Config.WAHA_WEBHOOK_URL
-        # WAHA Plus Webhook Structure
+        # Normalize: ensure no double '/webhook' or '/routes/'
+        base_webhook = "https://saas-bot-643221888510.asia-southeast2.run.app/webhook"
+        
         webhook_config = [
             {
-                "url": webhook_url,
+                "url": base_webhook,
                 "events": ["message", "session.status"] 
             }
         ]
+
 
         # 2. Check if exists
         url_all = f"{WAHA_BASE_URL}/api/sessions?all=true"
@@ -109,15 +111,30 @@ def get_waha_pairing_code(session_name, phone_number):
         import re
         phone = re.sub(r'\D', '', phone_number) 
         
-        # SUMOPOD/WAHA variants to try
+        # 1. ENSURE SESSION IS STARTING/WORKING
+        try:
+            status_res = requests.get(f"{WAHA_BASE_URL}/api/sessions/{session_name}", headers=get_headers(), timeout=5)
+            if status_res.status_code == 200:
+                curr_status = status_res.json().get('status')
+                if curr_status in ['STOPPED', 'FAILED']:
+                    logging.info(f"WAHA: Session {session_name} is {curr_status}. Restarting...")
+                    # Re-create/Start with correct webhook
+                    create_waha_session(session_name)
+                    time.sleep(3) # Wait for startup
+            elif status_res.status_code == 404:
+                logging.info(f"WAHA: Session {session_name} missing. Creating...")
+                create_waha_session(session_name)
+                time.sleep(3)
+        except: pass
+
+        # 2. TRY PAIRING CODE VARIANTS
         urls = [
             f"{WAHA_BASE_URL}/api/sessions/{session_name}/auth/pairing-code",
-            f"{WAHA_BASE_URL}/api/{session_name}/auth/pairing-code" # Variant 2
+            f"{WAHA_BASE_URL}/api/{session_name}/auth/pairing-code"
         ]
         
         for url in urls:
             try:
-                logging.info(f"WAHA: Trying QR/Pairing Link: {url}")
                 res = requests.get(url, params={"phoneNumber": phone}, headers=get_headers(), timeout=10)
                 logging.info(f"WAHA: Res [{res.status_code}] for {url}")
                 if res.status_code == 200:
@@ -127,6 +144,7 @@ def get_waha_pairing_code(session_name, phone_number):
     except Exception as e:
         logging.error(f"WAHA: Global Pairing Code Error: {e}")
     return None
+
 
 
 
