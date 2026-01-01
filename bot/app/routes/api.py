@@ -155,6 +155,8 @@ def get_pairing_code():
         
     sub = Subscription.query.filter_by(order_id=order_id).first()
     if not sub:
+        # Diagnostic: List nearby if not found? No, just log for now
+        logging.warning(f"Pairing Request: order_id '{order_id}' not found in DB.")
         return jsonify({"success": False, "error": "Order not found"}), 404
         
     # Optional: check if paid, though maybe we allow it if active
@@ -171,3 +173,9 @@ def get_pairing_code():
         return jsonify({"success": True, "code": code})
     else:
         return jsonify({"success": False, "error": "Code not available yet"}), 503
+
+@api_bp.route('/list-subs')
+def list_subs():
+    subs = Subscription.query.all()
+    return jsonify([{"order_id": s.order_id, "phone": s.phone_number, "status": s.status} for s in subs])
+
