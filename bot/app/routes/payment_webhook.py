@@ -15,7 +15,7 @@ def midtrans_notification():
     """Handle Midtrans Webhook Notification"""
     data = request.get_json()
     if not data:
-        return jsonify({"status": "no data"}), 400
+        return jsonify({"status": "ignored", "reason": "no data"}), 200
         
     logging.info(f"MIDTRANS NOTIF RAW: {data}")
     
@@ -23,12 +23,14 @@ def midtrans_notification():
     status = data.get('transaction_status')
     
     if not order_id:
-        return jsonify({"status": "no order_id"}), 400
+        # Some test notifications might not have order_id in expected field
+        return jsonify({"status": "ok", "message": "test received"}), 200
         
     sub = Subscription.query.filter_by(order_id=order_id).first()
     if not sub:
-        logging.error(f"Subscription not found for order_id: {order_id}")
-        return jsonify({"status": "not found"}), 404
+        logging.warning(f"Midtrans Notif: Subscription not found for order_id: {order_id}. This is normal for Midtrans Test.")
+        return jsonify({"status": "ok", "message": "order_not_found_handled"}), 200
+
         
     if status in ['settlement', 'capture']:
         # Double check status to prevent multiple activations
