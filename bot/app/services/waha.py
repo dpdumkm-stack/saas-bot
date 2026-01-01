@@ -106,25 +106,28 @@ def get_waha_qr_retry(session_name, retries=5):
 
 def get_waha_pairing_code(session_name, phone_number):
     try:
-        # 1. Clean Phone Number (Must be digits only)
         import re
         phone = re.sub(r'\D', '', phone_number) 
         
-        # 2. Correct WAHA Plus Endpoint
-        # Pattern: /api/sessions/{session}/auth/pairing-code?phoneNumber={phone}
-        url = f"{WAHA_BASE_URL}/api/sessions/{session_name}/auth/pairing-code"
-        params = {"phoneNumber": phone}
+        # SUMOPOD/WAHA variants to try
+        urls = [
+            f"{WAHA_BASE_URL}/api/sessions/{session_name}/auth/pairing-code",
+            f"{WAHA_BASE_URL}/api/{session_name}/auth/pairing-code" # Variant 2
+        ]
         
-        logging.info(f"WAHA: Requesting Pairing Code for {phone} in session {session_name}")
-        res = requests.get(url, params=params, headers=get_headers(), timeout=15)
-        
-        logging.info(f"WAHA: Pairing Code Res: {res.status_code} {res.text}")
-        if res.status_code == 200:
-            return res.json().get('code')
+        for url in urls:
+            try:
+                logging.info(f"WAHA: Trying QR/Pairing Link: {url}")
+                res = requests.get(url, params={"phoneNumber": phone}, headers=get_headers(), timeout=10)
+                logging.info(f"WAHA: Res [{res.status_code}] for {url}")
+                if res.status_code == 200:
+                    return res.json().get('code')
+            except: continue
             
     except Exception as e:
-        logging.error(f"WAHA: Pairing Code Error: {e}")
+        logging.error(f"WAHA: Global Pairing Code Error: {e}")
     return None
+
 
 
 
