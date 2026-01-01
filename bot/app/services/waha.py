@@ -106,15 +106,26 @@ def get_waha_qr_retry(session_name, retries=5):
 
 def get_waha_pairing_code(session_name, phone_number):
     try:
-        phone = phone_number.split('@')[0]
-        url = f"{WAHA_BASE_URL}/api/{session_name}/auth/pairing-code?phoneNumber={phone}"
-        logging.info(f"Requesting Pairing Code: {url}")
-        res = requests.get(url, headers=get_headers(), timeout=15)
+        # 1. Clean Phone Number (Must be digits only)
+        import re
+        phone = re.sub(r'\D', '', phone_number) 
+        
+        # 2. Correct WAHA Plus Endpoint
+        # Pattern: /api/sessions/{session}/auth/pairing-code?phoneNumber={phone}
+        url = f"{WAHA_BASE_URL}/api/sessions/{session_name}/auth/pairing-code"
+        params = {"phoneNumber": phone}
+        
+        logging.info(f"WAHA: Requesting Pairing Code for {phone} in session {session_name}")
+        res = requests.get(url, params=params, headers=get_headers(), timeout=15)
+        
+        logging.info(f"WAHA: Pairing Code Res: {res.status_code} {res.text}")
         if res.status_code == 200:
             return res.json().get('code')
+            
     except Exception as e:
-        logging.error(f"Error Pairing Code: {e}")
+        logging.error(f"WAHA: Pairing Code Error: {e}")
     return None
+
 
 
 def kirim_waha(chat_id, pesan, session_name="default"):
