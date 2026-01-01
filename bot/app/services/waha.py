@@ -67,12 +67,15 @@ def create_waha_session(session_name):
             sessions = res.json()
             for s in sessions:
                 if s.get('name') == session_name:
-                    # Optional: Update Webhook if session exists (PATCH not always available/standard, so we assume OK or user must restart session)
-                    # Ideally we would log "Session exists, ensuring webhook..." but for now we rely on initial creation or manual clean.
+                    # If exists but STOPPED, start it!
+                    if s.get('status') in ['STOPPED', 'FAILED']:
+                        logging.info(f"Session '{session_name}' exists but is {s.get('status')}. Starting now...")
+                        requests.post(f"{WAHA_BASE_URL}/api/sessions/{session_name}/start", headers=get_headers())
                     return True 
         
-        # 3. Start Session with Webhook
+        # 3. Start Session with Webhook (If not exists)
         url_start = f"{WAHA_BASE_URL}/api/sessions"
+
         payload = {
             "name": session_name, 
             "config": {
