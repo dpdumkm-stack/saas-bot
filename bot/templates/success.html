@@ -365,9 +365,20 @@
                 </div>
             </div>
 
-            <div class="alert">
-                <i class="bi bi-info-circle"></i>
-                Butuh bantuan? Hubungi admin via WhatsApp.
+            <!-- IMPORTANT WARNINGS - Always Visible! -->
+            <div
+                style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(245, 158, 11, 0.15)); border: 2px solid rgba(239, 68, 68, 0.4); padding: 18px; border-radius: 12px; margin-top: 25px; text-align: left;">
+                <h4
+                    style="color: #fca5a5; margin-bottom: 12px; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-exclamation-triangle-fill"></i> PENTING! Baca Ini:
+                </h4>
+                <ul style="color: #fcd34d; font-size: 0.95rem; line-height: 1.9; margin: 0; padding-left: 20px;">
+                    <li><strong>QR Code cuma bertahan 2 menit!</strong> Jadi scan segera setelah muncul</li>
+                    <li>Kalau QR hilang/expired, <strong>refresh halaman ini</strong> untuk QR baru</li>
+                    <li>Pastikan <strong>koneksi internet stabil</strong> di kedua device</li>
+                    <li><strong>Yang scan QR = HP yang jadi bot</strong> (jangan terbalik!)</li>
+                    <li>Setelah scan sukses, <strong>jangan logout</strong> dari WhatsApp Web/Perangkat Tertaut</li>
+                </ul>
             </div>
 
             <!-- Comprehensive 4-Scenario Help Guide -->
@@ -383,7 +394,7 @@
                         🤝 Pilih Situasi Anda
                     </h3>
                     <p style="color: #94a3b8; text-align: center; margin-bottom: 20px; font-size: 0.9rem;">
-                        Klik salah satu situasi yang sesuai dengan kondisi Anda:
+                        Pilih salah satu situasi yang sesuai dengan kondisi Anda:
                     </p>
 
                     <!-- Scenario 1: Punya 2 HP -->
@@ -505,28 +516,13 @@
                         </div>
                     </div>
 
-                    <!-- IMPORTANT TIPS -->
+                    <!-- Help CTA - Only show after user reads guide -->
                     <div
-                        style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(245, 158, 11, 0.1)); border: 2px solid rgba(239, 68, 68, 0.3); padding: 15px; border-radius: 10px; margin-top: 20px;">
-                        <h4 style="color: #fca5a5; margin-bottom: 10px; font-size: 1rem;">
-                            <i class="bi bi-exclamation-triangle-fill"></i> PENTING! Baca Ini:
-                        </h4>
-                        <ul style="color: #fcd34d; font-size: 0.9rem; line-height: 1.8; margin: 0; padding-left: 20px;">
-                            <li><strong>QR Code cuma bertahan 2 menit!</strong> Jadi scan segera setelah muncul</li>
-                            <li>Kalau QR hilang/expired, <strong>refresh halaman ini</strong> untuk QR baru</li>
-                            <li>Pastikan <strong>koneksi internet stabil</strong> di kedua device</li>
-                            <li><strong>Yang scan QR = HP yang jadi bot</strong> (jangan terbalik!)</li>
-                            <li>Setelah scan sukses, <strong>jangan logout</strong> dari WhatsApp Web/Perangkat Tertaut
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- Video Tutorial Suggestion -->
-                    <div
-                        style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); padding: 12px; border-radius: 8px; margin-top: 15px; text-align: center;">
-                        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">
-                            <i class="bi bi-camera-video"></i> Masih bingung?
-                            <strong style="color: #60a5fa;">Hubungi admin</strong> untuk panduan via video call!
+                        style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 14px; border-radius: 10px; margin-top: 20px; text-align: center;">
+                        <p style="color: #fca5a5; font-size: 0.95rem; margin: 0; line-height: 1.6;">
+                            <i class="bi bi-camera-video"></i> Sudah baca panduan di atas tapi masih bingung?<br>
+                            <strong style="color: #60a5fa;">Hubungi admin</strong> untuk panduan via video call atau
+                            chat!
                         </p>
                     </div>
                 </div>
