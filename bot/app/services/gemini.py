@@ -60,7 +60,7 @@ def get_history_text(toko_id, customer_hp):
     logs = ChatLog.query.filter_by(toko_id=toko_id, customer_hp=customer_hp).order_by(ChatLog.created_at.desc()).limit(6).all()
     return "\n".join([f"{'User' if l.role=='USER' else 'Bot'}: {l.message}" for l in reversed(logs)])
 
-def tanya_gemini(pesan_user, toko, customer, image_data=None):
+def get_gemini_response(pesan_user, toko, customer, image_data=None):
     today = datetime.now().strftime("%Y-%m-%d")
     if toko.last_reset != today:
         toko.status_buka = True
@@ -122,6 +122,7 @@ def tanya_gemini(pesan_user, toko, customer, image_data=None):
     except Exception as e:
         logging.error(f"Gemini AI Error for customer {customer.nomor_hp}: {e}")
         return "Maaf, AI sedang sibuk."
+
 
 def analisa_bukti_transfer(file_bytes, mime, expected):
     prompt = f"Analisa BUKTI TRANSFER. Tagihan: {expected}. JSON Output: {{'is_valid':bool, 'detected':int, 'fraud_score':int}}"
