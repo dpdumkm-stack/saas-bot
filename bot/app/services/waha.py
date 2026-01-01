@@ -141,22 +141,33 @@ def get_waha_pairing_code(session_name, phone_number):
         except: pass
 
         # 2. TRY PAIRING CODE VARIANTS
+        # Some versions need +, some don't. Some use phoneNumber, some use phone.
+        phone_variants = [phone, f"+{phone}"]
+        
         urls = [
             f"{WAHA_BASE_URL}/api/sessions/{session_name}/auth/pairing-code",
             f"{WAHA_BASE_URL}/api/{session_name}/auth/pairing-code"
         ]
         
         for url in urls:
-            try:
-                res = requests.get(url, params={"phoneNumber": phone}, headers=get_headers(), timeout=10)
-                logging.info(f"WAHA: Res [{res.status_code}] for {url}")
-                if res.status_code == 200:
-                    return res.json().get('code')
-            except: continue
-            
+            for p in phone_variants:
+                try:
+                    # Try with 'phoneNumber' param
+                    res = requests.get(url, params={"phoneNumber": p}, headers=get_headers(), timeout=10)
+                    logging.info(f"WAHA: Res [{res.status_code}] for {url} (p={p})")
+                    if res.status_code == 200:
+                        return res.json().get('code')
+                    
+                    # Try with 'phone' param (fallback variant)
+                    res = requests.get(url, params={"phone": p}, headers=get_headers(), timeout=10)
+                    if res.status_code == 200:
+                        return res.json().get('code')
+                except: continue
+                    
     except Exception as e:
         logging.error(f"WAHA: Global Pairing Code Error: {e}")
     return None
+
 
 
 
