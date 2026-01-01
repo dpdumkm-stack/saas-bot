@@ -7,7 +7,7 @@ import logging
 from app.config import Config
 from app.models import Toko, Subscription
 from app.extensions import db
-from app.services.waha import get_waha_pairing_code
+
 
 api_bp = Blueprint('api', __name__)
 WAHA_BASE_URL = Config.WAHA_BASE_URL
@@ -170,42 +170,6 @@ def api_update_counter():
         return jsonify({"status": "success", "new_stok": m.stok})
     except Exception as e:
         return jsonify({"error": "server error"}), 500
-
-@api_bp.route('/get-pairing-code')
-def get_pairing_code():
-    order_id = request.args.get('order_id')
-    if not order_id:
-        return jsonify({"success": False, "error": "Missing order_id"}), 400
-        
-    # 1. Try Exact Match
-    sub = Subscription.query.filter_by(order_id=order_id).first()
-    
-    # 2. Try Fallback (Extrapolate phone from order_id if not found)
-    if not sub:
-        logging.warning(f"Pairing: order_id '{order_id}' not found. Trying fallback...")
-        import re
-        potential_phones = re.findall(r'\d+', order_id)
-        for p in potential_phones:
-            if len(p) >= 10:
-                sub = Subscription.query.filter_by(phone_number=p).first()
-                if sub: 
-                    logging.info(f"Fallback matched: phone {p}")
-                    break
-
-    if not sub:
-        return jsonify({"success": False, "error": "Order not found"}), 404
-        
-    if sub.payment_status != 'paid' and sub.status != 'ACTIVE':
-         return jsonify({"success": False, "error": "Payment not confirmed"}), 400
-
-    session_name = f"session_{sub.phone_number}"
-    code = get_waha_pairing_code(session_name, sub.phone_number)
-    
-    if code:
-        return jsonify({"success": True, "code": code})
-    else:
-        return jsonify({"success": False, "error": "Code not available yet"}), 503
-
 
 
 

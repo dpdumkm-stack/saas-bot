@@ -119,54 +119,6 @@ def get_waha_qr_retry(session_name, retries=5):
             time.sleep(2)
     return None
 
-def get_waha_pairing_code(session_name, phone_number):
-    try:
-        import re
-        phone = re.sub(r'\D', '', phone_number) 
-        
-        # 1. ENSURE SESSION IS STARTING/WORKING
-        try:
-            status_res = requests.get(f"{WAHA_BASE_URL}/api/sessions/{session_name}", headers=get_headers(), timeout=5)
-            if status_res.status_code == 200:
-                curr_status = status_res.json().get('status')
-                if curr_status in ['STOPPED', 'FAILED']:
-                    logging.info(f"WAHA: Session {session_name} is {curr_status}. Restarting...")
-                    # Re-create/Start with correct webhook
-                    create_waha_session(session_name)
-                    time.sleep(3) # Wait for startup
-            elif status_res.status_code == 404:
-                logging.info(f"WAHA: Session {session_name} missing. Creating...")
-                create_waha_session(session_name)
-                time.sleep(3)
-        except: pass
-
-        # 2. TRY PAIRING CODE VARIANTS
-        # Some versions need +, some don't. Some use phoneNumber, some use phone.
-        phone_variants = [phone, f"+{phone}"]
-        
-        urls = [
-            f"{WAHA_BASE_URL}/api/sessions/{session_name}/auth/pairing-code",
-            f"{WAHA_BASE_URL}/api/{session_name}/auth/pairing-code"
-        ]
-        
-        for url in urls:
-            for p in phone_variants:
-                try:
-                    # Try with 'phoneNumber' param
-                    res = requests.get(url, params={"phoneNumber": p}, headers=get_headers(), timeout=10)
-                    logging.info(f"WAHA: Res [{res.status_code}] for {url} (p={p})")
-                    if res.status_code == 200:
-                        return res.json().get('code')
-                    
-                    # Try with 'phone' param (fallback variant)
-                    res = requests.get(url, params={"phone": p}, headers=get_headers(), timeout=10)
-                    if res.status_code == 200:
-                        return res.json().get('code')
-                except: continue
-                    
-    except Exception as e:
-        logging.error(f"WAHA: Global Pairing Code Error: {e}")
-    return None
 
 
 

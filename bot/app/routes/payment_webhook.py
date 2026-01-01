@@ -69,10 +69,11 @@ def midtrans_notification():
             msg_success = (
                 f"✅ **PEMBAYARAN DITERIMA!**\n\n"
                 f"Terima kasih {sub.name}, akun Anda kini telah aktif! 🚀\n\n"
-                f"Silakan klik link di bawah ini untuk mengambil **KODE PAIRING** dan menyambungkan WhatsApp Anda:\n\n"
+                f"Silakan klik link di bawah ini untuk mengaktifkan bot dengan **SCAN QR CODE**:\n\n"
                 f"👉 {success_url}\n\n"
-                f"_(Buka link di atas, lalu masukkan kodenya di menu Perangkat Tertaut di WA Anda)_"
+                f"_(Buka link di atas, lalu scan QR code dengan WhatsApp Anda)_"
             )
+
 
             kirim_waha(f"{sub.phone_number}@c.us", msg_success, MASTER_SESSION)
             
