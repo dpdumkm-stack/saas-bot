@@ -48,13 +48,20 @@ def webhook():
         return "Ignored", 200
 
     # Derive Toko ID from Session Name
-    # Example: 'session_62812...' -> '62812...'
     toko_id = session_id.replace("session_", "")
+    
+    # IMPROVED: Extract real phone number even if LID is sent
     nomor_murni = chat_id.split('@')[0] if '@' in chat_id else chat_id
+    alt_jid = msg_obj.get('_data', {}).get('key', {}).get('remoteJidAlt', '')
+    if alt_jid and "@" in alt_jid:
+        nomor_murni = alt_jid.split('@')[0]
+        
+    logging.info(f"SENDER: {chat_id} | PARSED_PHONE: {nomor_murni}")
 
     # --- FILTER NOMOR TERDAFTAR (MASTER SESSION ONLY) ---
     if session_id == Config.MASTER_SESSION:
         is_admin = (nomor_murni == Config.SUPER_ADMIN_WA)
+
         is_submitting_reg = any(x in body.upper() for x in ["/DAFTAR", "REG_AUTO", "/UNREG", "/PING", "/PINTU"])
         
         # Cek apakah nomor ada di tabel Subscription atau Toko
