@@ -48,14 +48,15 @@ def create_waha_session(session_name):
     try:
         # 1. Define Webhook Config
         # Normalize: ensure no double '/webhook' or '/routes/'
-        base_webhook = "https://saas-bot-643221888510.asia-southeast2.run.app/webhook"
+        webhook_url = "https://saas-bot-643221888510.asia-southeast2.run.app/webhook"
         
         webhook_config = [
             {
-                "url": base_webhook,
+                "url": webhook_url,
                 "events": ["message", "session.status"] 
             }
         ]
+
 
 
         # 2. Check if exists
