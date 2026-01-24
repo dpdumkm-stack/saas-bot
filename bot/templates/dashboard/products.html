@@ -1,0 +1,197 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<div class="products-container">
+    <div class="page-header">
+        <h2 class="page-title">
+            <i class="bi bi-box-seam"></i> Manajemen Produk
+        </h2>
+        <button class="btn-add" onclick="openAddModal()">
+            <i class="bi bi-plus-lg"></i> Tambah Produk
+        </button>
+    </div>
+
+    <div class="search-box mb-4">
+        <i class="bi bi-search"></i>
+        <input type="text" id="searchInput" class="search-input" placeholder="Cari nama produk...">
+    </div>
+
+    <div class="table-responsive">
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th>Nama Produk</th>
+                    <th>Kategori</th>
+                    <th>Harga</th>
+                    <th>Stok</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in products %}
+                <tr>
+                    <td class="product-item">
+                        {% if p.image_url %}
+                        <img src="{{ p.image_url }}" alt="img"
+                            style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover; margin-right: 8px;">
+                        {% endif %}
+                        {{ p.item }}
+                    </td>
+                    <td>
+                        <span class="product-category">{{ p.category }}</span>
+                    </td>
+                    <td class="product-price">Rp{{ "{:,.0f}".format(p.harga).replace(',', '.') }}</td>
+                    <td>
+                        {% if p.stok > 10 %}
+                        <span class="stock-badge stock-in">Tersedia ({{ p.stok }})</span>
+                        {% elif p.stok > 0 %}
+                        <span class="stock-badge stock-low">Menipis ({{ p.stok }})</span>
+                        {% else %}
+                        <span class="stock-badge stock-out">Habis</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="action-btn btn-edit"
+                            onclick="openEditModal('{{ p.id }}', '{{ p.item }}', '{{ p.harga }}', '{{ p.stok }}', '{{ p.category }}', `{{ p.description or '' }}`, '{{ p.image_url or '' }}')">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button class="action-btn btn-delete" onclick="confirmDelete('{{ p.id }}')">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-gray-500">Belum ada produk. Silakan tambah produk baru.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Modal -->
+<div id="addModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Tambah Produk Baru</h3>
+            <button class="close-modal" onclick="closeAddModal()">&times;</button>
+        </div>
+        <form id="addForm" onsubmit="submitAddProduct(event)">
+            <div class="form-group">
+                <label class="form-label">Nama Produk *</label>
+                <input type="text" name="item" class="form-input" required placeholder="Contoh: Nasi Goreng">
+            </div>
+
+            <div class="split-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label class="form-label">Harga (Rp) *</label>
+                    <input type="number" name="harga" class="form-input" required placeholder="15000">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Stok Awal</label>
+                    <input type="number" name="stok" class="form-input" value="100">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Kategori</label>
+                <select name="category" class="form-select">
+                    <option value="Makanan">Makanan</option>
+                    <option value="Minuman">Minuman</option>
+                    <option value="Snack">Snack</option>
+                    <option value="Jasa">Jasa</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">URL Gambar (Optional)</label>
+                <input type="url" name="image_url" class="form-input" placeholder="https://...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Deskripsi (Optional)</label>
+                <textarea name="description" class="form-textarea" rows="2"></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeAddModal()">Batal</button>
+                <button type="submit" class="btn-save">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Edit Produk</h3>
+            <button class="close-modal" onclick="closeEditModal()">&times;</button>
+        </div>
+        <form id="editForm" onsubmit="submitEditProduct(event)">
+            <input type="hidden" id="editId" name="id">
+            <div class="form-group">
+                <label class="form-label">Nama Produk *</label>
+                <input type="text" id="editItem" name="item" class="form-input" required>
+            </div>
+
+            <div class="split-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label class="form-label">Harga (Rp) *</label>
+                    <input type="number" id="editHarga" name="harga" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Stok</label>
+                    <input type="number" id="editStok" name="stok" class="form-input">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Kategori</label>
+                <select id="editCategory" name="category" class="form-select">
+                    <option value="Makanan">Makanan</option>
+                    <option value="Minuman">Minuman</option>
+                    <option value="Snack">Snack</option>
+                    <option value="Jasa">Jasa</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">URL Gambar</label>
+                <input type="url" id="editImageUrl" name="image_url" class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Deskripsi</label>
+                <textarea id="editDescription" name="description" class="form-textarea" rows="2"></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeEditModal()">Batal</button>
+                <button type="submit" class="btn-save">Update</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <i class="bi bi-exclamation-circle text-red-500" style="font-size: 3rem; color: #ef4444;"></i>
+        <h3 class="modal-title" style="margin: 15px 0;">Hapus Produk?</h3>
+        <p style="color: #64748b; margin-bottom: 25px;">Data yang dihapus tidak dapat dikembalikan.</p>
+        <div class="modal-footer" style="justify-content: center;">
+            <button type="button" class="btn-cancel" onclick="closeDeleteModal()">Batal</button>
+            <button type="button" id="btnConfirmDelete" class="btn-delete" onclick="executeDelete()"
+                style="padding: 10px 20px; border-radius: 8px; font-weight: 600;">Ya, Hapus</button>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_products.css') }}">
+<script src="{{ url_for('static', filename='js/dashboard_products.js') }}"></script>
+{% endblock %}

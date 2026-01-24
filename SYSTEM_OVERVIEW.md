@@ -4,6 +4,12 @@ Dokumen ini menjelaskan alur kerja, fitur, dan arsitektur sistem SaaS Bot yang d
 
 ---
 
+## 🛑 Kebijakan Pengembangan (Development Policy)
+**PENTING: Semua interaksi, diskusi, dan dokumentasi WAJIB menggunakan BAHASA INDONESIA.**
+AI Assistant harus selalu mengingat preferensi ini dan merespon dalam Bahasa Indonesia yang formal namun ramah, kecuali jika user secara spesifik meminta Bahasa Inggris untuk istilah teknis tertentu.
+
+---
+
 ## 🚀 1. Alur Sistem (Hybrid Turbo Flow)
 
 Sistem ini menggunakan pendekatan **Hybrid Turbo** untuk mempercepat proses onboarding merchant baru:
@@ -18,16 +24,14 @@ Sistem ini menggunakan pendekatan **Hybrid Turbo** untuk mempercepat proses onbo
 2. **Form Data**: Mengisi Nama Toko, Kategori (F&B, Jasa, Retail), dan No. WA.
 3. **Pembayaran**: Sistem membuat invoice via Midtrans (support QRIS, VA, E-Wallet).
 
-### 🔑 Tahap B: Aktivasi (Hybrid Handoff)
+### 🔑 Tahap B: Aktivasi (QR Scan Flow)
 1. **Sukses Bayar**: Setelah pembayaran dikonfirmasi, Merchant diarahkan ke **Halaman Sukses**.
-2. **Get Pairing Code**: Halaman ini akan memanggil API `/api/get-pairing-code` secara otomatis.
-3. **Display Code**: Merchant akan melihat **8-Digit Kode Unik** (misal: `ABC1-2345`).
-4. **Input di HP**:
+2. **Display QR Code**: Halaman ini akan memuat **QR Code Aktivasi** secara otomatis dari sistem WAHA Plus.
+3. **Scan dari HP**:
     - Merchant buka WhatsApp di HP Toko.
     - Masuk ke Perangkat Tertaut > Tautkan Perangkat.
-    - Pilih opsi **"Tautkan dengan nomor telepon saja"**.
-    - Masukkan Kode 8-Digit tersebut.
-5. **Connected**: WAHA Plus akan mendeteksi koneksi dan sesi bot merchant aktif.
+    - Arahkan kamera HP ke layar untuk scan QR Code tersebut.
+4. **Connected**: Sistem akan mendeteksi koneksi secara real-time dan menyalakan mesin bot merchant.
 
 ### 🤖 Tahap C: Pengoperasian
 1. **Sapaan Awal**: Bot menyapa Merchant ("Halo Bos! Bot Toko [Nama] siap kerja!").
@@ -77,8 +81,7 @@ Sistem ini menggunakan pendekatan **Hybrid Turbo** untuk mempercepat proses onbo
 | `/menu` | Menambah produk baru ke database toko. | `/menu Nasi Goreng 15000` |
 | `/broadcast` | Kirim pesan massal ke semua pelanggan toko. | `/broadcast Promo Merdeka diskon 17%!` |
 | `/gantinama` | Mengubah nama toko di sistem/invoice. | `/gantinama Bakso Mas Roy` |
-| `/kode` | Meminta ulang Kode Pairing jika terputus. | `/kode` |
-| `/scan` | (Alternatif) Meminta QR Code jika pairing code gagal. | `/scan` |
+| `/scan` | Meminta link QR Code jika ingin menghubungkan ulang. | `/scan` |
 | `/unreg` | Menghapus seluruh data toko dan langganan (Reset). | `/unreg` |
 | `/batal` | Membatalkan proses pendaftaran yang sedang berjalan. | `/batal` |
 
@@ -86,12 +89,12 @@ Sistem ini menggunakan pendekatan **Hybrid Turbo** untuk mempercepat proses onbo
 
 ## ⚠️ 4. Troubleshooting Umum
 
-**Masalah: Kode Pairing tidak muncul di halaman sukses.**
+**Masalah: QR Code tidak muncul di halaman sukses.**
 *   **Penyebab**: Sesi WAHA belum siap atau limit request.
 *   **Solusi**:
-    1. Refresh halaman sukses.
+    1. Refresh halaman sukses atau klik tombol "Reset Koneksi".
     2. Cek apakah pembayaran sudah berstatus `settlement`.
-    3. Merchant bisa ketik `/kode` manual di chat bot utama.
+    3. Merchant bisa ketik `/scan` manual di chat bot utama untuk mendapatkan link baru.
 
 **Masalah: Bot tidak balas chat pelanggan.**
 *   **Penyebab**: Sesi terputus atau saldo Kuota AI habis.

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Wali.ai Blacklist Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .search-bar {
+            width: 100%;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            background: var(--card);
+            border: 1px solid #334155;
+            color: white;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.02);
+            font-size: 13px;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+
+        .btn-unblock {
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            background: transparent;
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Blacklist Manager</h1>
+            <div style="font-size: 14px; opacity: 0.6;">Total Terblokir: <span id="totalCount">0</span></div>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Cari nomor HP..." oninput="loadBlacklist()">
+        </div>
+
+        <table id="blacklistTable">
+            <thead>
+                <tr>
+                    <th>Nomor HP</th>
+                    <th>Waktu Opt-out</th>
+                    <th>Alasan</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="blacklistBody">
+                <!-- Data loaded via JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function loadBlacklist() {
+            const query = document.getElementById('searchInput').value;
+            const res = await fetch(\`/superadmin/api/blacklist?q=\${query}\`);
+            const data = await res.json();
+            
+            document.getElementById('totalCount').textContent = data.length;
+            const body = document.getElementById('blacklistBody');
+            body.innerHTML = data.map(b => `
+                < tr >
+                    <td style="font-family: monospace; font-weight: 600;">${b.phone_number}</td>
+                    <td>${new Date(b.opted_out_at).toLocaleString('id-ID')}</td>
+                    <td><span style="background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px; font-size: 12px;">${b.reason}</span></td>
+                    <td>
+                        <button class="btn-unblock" onclick="unblock('${b.phone_number}')">
+                            <i class="fas fa-trash-alt"></i> Unblock
+                        </button>
+                    </td>
+                </tr >
+            `).join('');
+        }
+
+        async function unblock(phone) {
+            if (confirm(\`Yakin ingin menghapus \${phone} dari blacklist?\`)) {
+                await fetch(\`/superadmin/api/blacklist/\${phone}\`, { method: 'DELETE' });
+                loadBlacklist();
+            }
+        }
+
+        loadBlacklist();
+    </script>
+</body>
+
+</html>

@@ -1,7 +1,7 @@
 from app.extensions import db
 from app.models import Customer, Toko, ChatLog
 from app.services.waha import kirim_waha
-from app.services.gemini import client
+from app.services.gemini import get_client
 from datetime import datetime, timedelta
 import logging
 
@@ -29,7 +29,8 @@ def check_and_send_followups(app):
             candidates = Customer.query.filter(
                 Customer.last_interaction < threshold,
                 Customer.followup_status == 'NONE',
-                Customer.last_interaction != None
+                Customer.last_interaction != None,
+                Customer.nomor_hp != Customer.toko_id # Identity Guard
             ).limit(BATCH_SIZE).all()
 
             if not candidates:
@@ -75,7 +76,8 @@ def generate_nudge(toko, cust):
     
     # Priority 2: AI Contextual Nudge
     try:
-        if not client: 
+        current_client = get_client(toko)
+        if not current_client: 
             return f"Halo Kak! Apa kabar? Ada yang bisa kami bantu lagi di {toko.nama}?"
         
         # Get context
@@ -94,7 +96,7 @@ def generate_nudge(toko, cust):
         Output langsung kalimatnya.
         """
         
-        res = client.models.generate_content(
+        res = current_client.models.generate_content(
             model='gemini-1.5-flash',
             contents=prompt
         )
@@ -102,3 +104,37 @@ def generate_nudge(toko, cust):
     except Exception as e:
         logging.error(f"Gemini Nudge Error: {e}")
         return f"Halo Kak! Masih berminat dengan menu kami?"
+        return res.text.strip().replace('"', '')
+    except Exception as e:
+        logging.error(f"Gemini Nudge Error: {e}")
+        return f"Halo Kak! Masih berminat dengan menu kami?"
+
+def worker_sales_engine(app):
+    """Background worker for Sales Engine"""
+    import time
+    import random
+    
+    logging.info("SalesEngine Worker Started...")
+    while True:
+        try:
+            # Run every 30 minutes (approx) to avoid spamming validity checks
+            # But sleeping 30 mins blocks thread? No, it's a thread.
+            
+            # Check maintenance
+            from app.models import SystemConfig
+            with app.app_context():
+                 m = SystemConfig.query.get('maintenance_mode')
+                 if m and m.value == 'true':
+                     logging.info("SalesEngine Paused (Maintenance Mode)")
+                     time.sleep(300)
+                     continue
+            
+            check_and_send_followups(app)
+            
+            # Sleep 10-30 minutes
+            sleep_time = random.uniform(600, 1800) 
+            time.sleep(sleep_time)
+            
+        except Exception as e:
+            logging.error(f"SalesEngine Worker Crash: {e}")
+            time.sleep(300)

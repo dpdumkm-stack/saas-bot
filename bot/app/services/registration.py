@@ -3,24 +3,69 @@ from app.models import Subscription, Toko
 from app.extensions import db
 from app.services.waha import kirim_waha, create_waha_session
 from app.services.payment import create_payment_link
+from app.services.subscription_manager import permanently_delete_subscription, cancel_subscription_with_grace
 from datetime import datetime, timedelta
 import time
 import uuid
+from app.config import Config
 
 def handle_registration(phone, body, chat_id, session_id):
     """Handle the multi-step registration flow via WhatsApp"""
     
+    # NORMALIZE PHONE NUMBER (08... -> 62...)
+    original_phone = phone
+    if phone.startswith('0'):
+        phone = '62' + phone[1:]
+    if phone.startswith('+'):
+        phone = phone[1:]
+    phone = phone.replace('-', '').replace(' ', '')
+    
+    # DEBUG LOGGING
+    logging.info(f"🔍 REGISTRATION DEBUG: original='{original_phone}', normalized='{phone}', body='{body}'")
+    
     # 1. Check existing subscription
     sub = Subscription.query.filter_by(phone_number=phone).first()
     
-    # 2. Command: /unreg
-    if body.lower() == '/unreg':
+    # DEBUG LOGGING
+    logging.info(f"🔍 DB QUERY RESULT: phone='{phone}', found={sub is not None}, sub_id={sub.id if sub else 'N/A'}")
+    
+    # 2. Command: /unreg or /scan
+    cmd = body.lower().strip()
+    if cmd == '/unreg':
         if sub:
-            db.session.delete(sub)
-            db.session.commit()
-            kirim_waha(chat_id, "Data pendaftaran Anda telah dihapus. Ketik /daftar untuk mulai baru.", session_id)
+            # SAFETY CHECK: Paid Users get Grace Period
+            is_paid = (sub.payment_status == 'paid')
+            is_trial = (sub.tier and sub.tier.upper() == 'TRIAL')
+            
+            if is_paid and not is_trial:
+                # GRACEFUL CANCEL (30 Days Retention)
+                # Note: cancel_subscription_with_grace sends its own confirmation via Master Session
+                res = cancel_subscription_with_grace(phone)
+                
+                if not res['success']:
+                    kirim_waha(chat_id, f"❌ Gagal memproses permintaan: {res['message']}", session_id)
+            else:
+                # HARD DELETE (Draft / Trial / Unpaid) - Nuclear Reset
+                success = permanently_delete_subscription(phone)
+                if success:
+                    kirim_waha(chat_id, "Data pendaftaran & toko Anda telah dihapus permanen (Nuclear Reset). Ketik /daftar untuk mulai baru.", Config.MASTER_SESSION)
+                else:
+                    kirim_waha(chat_id, "❌ Terjadi kegagalan saat membersihkan data. Silakan hubungi admin.", session_id)
         else:
             kirim_waha(chat_id, "Anda belum terdaftar.", session_id)
+        return
+        
+    if cmd == '/scan':
+        if sub and sub.payment_status == 'paid':
+            success_url = f"https://saas-bot-643221888510.asia-southeast2.run.app/success?order_id={sub.order_id}"
+            msg = (
+                f"Ini link **Scan QR Aktivasi** Kakak: 😊\n\n"
+                f"👉 {success_url}\n\n"
+                f"Buka link di atas melalui HP lain/laptop, lalu scan QR-nya pakai WhatsApp ini ya!"
+            )
+            kirim_waha(chat_id, msg, session_id)
+        else:
+            kirim_waha(chat_id, "Maaf, fitur ini hanya untuk akun yang sudah bayar dan butuh aktivasi. Ketik /daftar jika ingin mulai baru.", session_id)
         return
 
     # 3. Initiation: /daftar or REG_AUTO
@@ -60,12 +105,27 @@ def handle_registration(phone, body, chat_id, session_id):
             return
             
         sub.category = cat
+        sub.step = 25 # Step 2.5: Ask Admin Name
+        db.session.commit()
+        
+        msg = (
+            f"Kategori {cat} terpilih. 👍\n\n"
+            f"Sekarang, siapa **Nama Panggilan Admin** yang Kakak inginkan?\n"
+            f"(Contoh: Sari, Mita, Aldi, atau nama Kakak sendiri).\n\n"
+            f"Nama ini yang akan menyapa pelanggan Kakak nanti agar terasa lebih akrab. 😊"
+        )
+        kirim_waha(chat_id, msg, session_id)
+        return
+
+    # 5.5 Step 2.5: Capture Admin Name
+    if sub.step == 25:
+        sub.admin_name = body.strip()
         sub.step = 3
         db.session.commit()
         
         msg = (
-            f"Kategori {cat} terpilih.\n\n"
-            f"Pilih Paket Langganan:\n"
+            f"Siap! Nanti **{body}** yang akan bantu balas chat pelanggan Kakak. 😉\n\n"
+            f"Terakhir, pilih Paket Langganan:\n"
             f"1. STARTER (Rp 99rb/bln)\n"
             f"2. BUSINESS (Rp 199rb/bln)\n"
             f"3. PRO (Rp 349rb/bln)\n\n"
@@ -104,11 +164,12 @@ def handle_registration(phone, body, chat_id, session_id):
             sub.payment_url = pay_url
             db.session.commit()
             msg = (
-                f"Terima kasih! 🙏\n\n"
+                f"Terima kasih Kak! 🙏\n\n"
                 f"Pesanan: Paket {selected_tier}\n"
                 f"Total: Rp {amount:,}\n\n"
-                f"Silakan lakukan pembayaran melalui link ini:\n{pay_url}\n\n"
-                f"Bot akan aktif otomatis setelah pembayaran lunas."
+                f"Silakan bayar melalui link aman ini ya:\n{pay_url}\n\n"
+                f"**Langkah Terakhir Setelah Bayar:**\n"
+                f"Kakak akan diarahkan ke halaman **Aktivasi (Scan QR)**. Cukup scan sekali saja agar asisten otomatisnya langsung aktif dan siap bantu jualan. Gampang banget kok! 😊✨"
             )
             kirim_waha(chat_id, msg, session_id)
         else:

@@ -58,17 +58,23 @@ def api_qr():
         session_param = request.args.get('session')
         
         if session_param:
-            # Lookup subscription by order_id to get the phone number
-            sub = Subscription.query.filter_by(order_id=session_param).first()
+            # Handle if session already has "session_" prefix
+            sub_id = session_param.replace('session_', '')
+            
+            # Lookup subscription by order_id or phone_number
+            sub = Subscription.query.filter(
+                (Subscription.order_id == sub_id) | 
+                (Subscription.phone_number == sub_id)
+            ).first()
+            
             if not sub:
-                # Try fallback lookup
+                # Try fallback lookup for digits (phone number)
                 import re
-                potential_phones = re.findall(r'\d+', session_param)
+                potential_phones = re.findall(r'\d+', sub_id)
                 for p in potential_phones:
                     if len(p) >= 10:
                         sub = Subscription.query.filter_by(phone_number=p).first()
-                        if sub:
-                            break
+                        if sub: break
             
             if sub:
                 target_session = f"session_{sub.phone_number}"
@@ -81,40 +87,35 @@ def api_qr():
         api_key = Config.WAHA_API_KEY
         headers = {'X-Api-Key': api_key}
         
-        # Check if session exists
-        session_ready = False
+        # Check if session exists and its status
         try:
             chk = requests.get(f"{WAHA_BASE_URL}/api/sessions/{target_session}", headers=headers, timeout=5)
             if chk.status_code == 200:
-                session_ready = True
-                if chk.json().get('status') == 'STOPPED':
-                    threading.Thread(target=lambda: requests.post(
-                        f"{WAHA_BASE_URL}/api/sessions/{target_session}/start", 
-                        headers=headers, timeout=10
-                    )).start()
-        except: pass
-            
-        if not session_ready:
-            # Trigger BG creation if not locked
-            if not session_creation_lock.locked():
-                threading.Thread(target=create_and_start_session_bg).start()
-            return jsonify({"error": "Initializing... Please refresh in 5s"}), 503
+                status = chk.json().get('status')
+                if status in ['STOPPED', 'FAILED']:
+                    logging.info(f"Session {target_session} is {status}. Restarting...")
+                    requests.post(f"{WAHA_BASE_URL}/api/sessions/{target_session}/start", headers=headers, timeout=10)
+                    return jsonify({"error": "Restarting session... Wait 5s"}), 503
+            else:
+                # Session doesn't exist at all, create it
+                logging.info(f"Session {target_session} not found. Creating...")
+                requests.post(f"{WAHA_BASE_URL}/api/sessions", json={"name": target_session}, headers=headers, timeout=10)
+                requests.post(f"{WAHA_BASE_URL}/api/sessions/{target_session}/start", headers=headers, timeout=10)
+                return jsonify({"error": "Creating session... Wait 10s"}), 503
+        except Exception as sess_err:
+            logging.error(f"Sess check error: {sess_err}")
 
         # Try to get QR
         qr_urls = [
             f"{WAHA_BASE_URL}/api/{target_session}/auth/qr?format=image",
-            f"{WAHA_BASE_URL}/api/sessions/{target_session}/auth/qr?format=image",
-            f"{WAHA_BASE_URL}/api/{target_session}/auth/qr"
+            f"{WAHA_BASE_URL}/api/sessions/{target_session}/auth/qr?format=image"
         ]
         
         for url in qr_urls:
             try:
                 response = requests.get(url, headers=headers, timeout=5)
-                if response.status_code == 200:
-                    return send_file(
-                        io.BytesIO(response.content),
-                        mimetype='image/png'
-                    )
+                if response.status_code == 200 and 'image' in response.headers.get('content-type', ''):
+                    return send_file(io.BytesIO(response.content), mimetype='image/png')
             except: continue
         
         return jsonify({"error": "QR loading..."}), 503
@@ -123,18 +124,43 @@ def api_qr():
         logging.error(f"API QR Error: {e}")
         return jsonify({"error": "Internal Error"}), 500
 
-@api_bp.route('/waha_status')
-def waha_status():
+@api_bp.route('/status')
+def api_status():
+    """Check connection status for a specific session or master session"""
     try:
+        session_param = request.args.get('session')
+        target_session = MASTER_SESSION
+        
+        if session_param:
+            sub = Subscription.query.filter_by(order_id=session_param).first()
+            if not sub:
+                # Try search by phone
+                import re
+                p = re.findall(r'\d+', session_param)
+                if p:
+                    sub = Subscription.query.filter_by(phone_number=p[0]).first()
+            
+            if sub:
+                target_session = f"session_{sub.phone_number}"
+
         api_key = Config.WAHA_API_KEY
         headers = {'X-Api-Key': api_key}
-        response = requests.get(f"{WAHA_BASE_URL}/api/sessions/{MASTER_SESSION}", headers=headers, timeout=3)
+        
+        response = requests.get(f"{WAHA_BASE_URL}/api/sessions/{target_session}", headers=headers, timeout=5)
         if response.status_code == 200:
-            status = response.json()
-            return jsonify({"connected": status.get('status')=='WORKING', "status": status.get('status')})
-        return jsonify({"connected": False, "status": "NOT_FOUND"})
-    except:
-        return jsonify({"connected": False, "status": "ERROR"})
+            data = response.json()
+            status = data.get('status', 'UNKNOWN')
+            # WAHA Statuses: SCAN_QR, WORKING, STOPPED, FAILED, etc.
+            return jsonify({
+                "status": status,
+                "connected": status == 'WORKING',
+                "session": target_session
+            })
+        
+        return jsonify({"status": "NOT_FOUND", "connected": False})
+    except Exception as e:
+        logging.error(f"Status API Error: {e}")
+        return jsonify({"status": "ERROR", "connected": False})
 
 @api_bp.route('/reset_session', methods=['POST'])
 def reset_session():
@@ -170,6 +196,115 @@ def api_update_counter():
         return jsonify({"status": "success", "new_stok": m.stok})
     except Exception as e:
         return jsonify({"error": "server error"}), 500
+
+@api_bp.route('/register_trx', methods=['POST'])
+def register_trx():
+    """
+    Unified Payment Registration Endpoint.
+    Used by: Landing Page (New User) & Chatbot (Upgrade/Renewal).
+    """
+    import uuid
+    from datetime import datetime
+    from app.services.midtrans_service import get_snap_redirect_url
+    
+    data = request.json
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+        
+    phone = data.get('phone_number')
+    name = data.get('name', 'Unknown Token')
+    category = data.get('category', 'General')
+    package_key = data.get('package', 'STARTER').upper()
+    
+    if not phone:
+        return jsonify({"error": "Phone number is required"}), 400
+        
+    # Call Service
+    from app.services.transaction_service import create_subscription_transaction
+    
+    result = create_subscription_transaction(phone, name, package_key, category)
+    
+    if result['status'] == 'success':
+        return jsonify(result)
+    else:
+        return jsonify({"status": "failed", "message": result['message'], "error": result['message']}), 400
+
+@api_bp.route('/broadcast/send', methods=['POST'])
+def send_broadcast():
+    """Admin Endpoint to Trigger Broadcast"""
+    import json
+    from app.models import BroadcastJob
+    
+    # Security: Use WAHA_API_KEY as Admin Secret
+    if request.headers.get('X-Api-Key') != Config.WAHA_API_KEY:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    data = request.json
+    toko_id = data.get('toko_id')
+    message = data.get('message')
+    targets = data.get('targets', [])
+    
+    if not toko_id or not message or not targets:
+        return jsonify({"error": "Missing toko_id, message, or targets"}), 400
+        
+    try:
+        job = BroadcastJob(
+            toko_id=toko_id,
+            pesan=message,
+            target_list=json.dumps(targets),
+            status='PENDING'
+        )
+        db.session.add(job)
+        db.session.commit()
+        return jsonify({"status": "queued", "job_id": job.id})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@api_bp.route('/subscription/cancel', methods=['POST'])
+def api_cancel_subscription():
+    """Cancel subscription from dashboard with feedback."""
+    try:
+        data = request.json
+        phone = data.get('phone_number')
+        reason = data.get('reason')
+        confirm = data.get('confirm')
+
+        if not phone or not confirm:
+            return jsonify({"status": "error", "message": "Missing phone or confirmation"}), 400
+
+        from app.services.subscription_manager import cancel_subscription_with_grace
+        result = cancel_subscription_with_grace(phone, reason=reason)
+
+        if result['success']:
+            return jsonify({"status": "success", "message": result['message'], "grace_period_ends": result.get('grace_period_ends')})
+        else:
+            return jsonify({"status": "error", "message": result['message']}), 400
+
+    except Exception as e:
+        logging.error(f"API Cancel Subscription Error: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@api_bp.route('/subscription/reactivate', methods=['POST'])
+def api_reactivate_subscription():
+    """Reactivate cancelled subscription from dashboard."""
+    try:
+        data = request.json
+        phone = data.get('phone_number')
+
+        if not phone:
+            return jsonify({"status": "error", "message": "Phone number is required"}), 400
+
+        from app.services.subscription_manager import reactivate_from_grace
+        result = reactivate_from_grace(phone)
+
+        if result['success']:
+            return jsonify({"status": "success", "message": result['message'], "new_expiry": result.get('new_expiry')})
+        else:
+            return jsonify({"status": "error", "message": result['message']}), 400
+
+    except Exception as e:
+        logging.error(f"API Reactivate Subscription Error: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 

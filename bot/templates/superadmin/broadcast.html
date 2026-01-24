@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Broadcast Campaign - Superadmin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .animate-spin-slow {
+            animation: spin 3s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Header -->
+    <div class="gradient-bg text-white px-6 py-4 shadow-lg">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold">🚀 Broadcast Campaign</h1>
+                <p class="text-sm opacity-90">Kirim pesan marketing ke pelanggan</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="/superadmin"
+                    class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition">
+                    <i class="bi bi-house-door"></i> Dashboard
+                </a>
+                <a href="/superadmin/broadcast/history"
+                    class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition">
+                    <i class="bi bi-clock-history"></i> History
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <!-- Left Column: Broadcast Form -->
+            <div class="lg:col-span-8">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-6">📤 Buat Broadcast Baru</h2>
+
+                    <form id="broadcastForm" enctype="multipart/form-data">
+                        <!-- Target Type Selection -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Target Audience</label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="relative cursor-pointer">
+                                    <input type="radio" name="target_type" value="csv" checked class="peer sr-only">
+                                    <div
+                                        class="p-4 rounded-xl border-2 border-gray-200 peer-checked:border-purple-500 peer-checked:bg-purple-50 transition">
+                                        <div class="flex items-center gap-3">
+                                            <i class="bi bi-file-earmark-spreadsheet text-2xl text-purple-600"></i>
+                                            <div>
+                                                <div class="font-semibold text-gray-800">Upload CSV</div>
+                                                <div class="text-xs text-gray-500">Custom list</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="relative cursor-pointer">
+                                    <input type="radio" name="target_type" value="segment" class="peer sr-only">
+                                    <div
+                                        class="p-4 rounded-xl border-2 border-gray-200 peer-checked:border-purple-500 peer-checked:bg-purple-50 transition">
+                                        <div class="flex items-center gap-3">
+                                            <i class="bi bi-people text-2xl text-purple-600"></i>
+                                            <div>
+                                                <div class="font-semibold text-gray-800">Segment</div>
+                                                <div class="text-xs text-gray-500">Predefined groups</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="target_type" value="paste" class="peer sr-only">
+                                <div
+                                    class="p-4 rounded-xl border-2 border-gray-200 peer-checked:border-purple-500 peer-checked:bg-purple-50 transition">
+                                    <div class="flex items-center gap-3">
+                                        <i class="bi bi-clipboard-data text-2xl text-purple-600"></i>
+                                        <div>
+                                            <div class="font-semibold text-gray-800">Paste / Manual</div>
+                                            <div class="text-xs text-gray-500">Copy-paste dari Excel</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                </div>
+
+                <!-- CSV Upload (default visible) -->
+                <div id="csvUploadSection" class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Upload CSV File</label>
+                    <div
+                        class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-purple-400 transition">
+                        <input type="file" id="csvFile" name="csv_file" accept=".csv,.txt" class="hidden">
+                        <label for="csvFile" class="cursor-pointer">
+                            <i class="bi bi-cloud-upload text-4xl text-gray-400 mb-2 block"></i>
+                            <p class="text-sm text-gray-600 font-medium">Click to upload CSV / TXT</p>
+                            <p class="text-xs text-gray-400 mt-1">Satu nomor per baris atau gunakan pemisah (koma/titik
+                                koma).
+                            </p>
+                            <p class="text-[10px] text-purple-500 mt-1 font-semibold">Support: Excel (CSV) & Notepad
+                                (TXT)</p>
+                            <p id="fileName" class="text-xs text-purple-600 mt-2 font-semibold hidden"></p>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Manual Paste Section (hidden by default) -->
+                <div id="pasteSection" class="mb-6 hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tempel Nomor (Copy-Paste)</label>
+                    <div class="relative">
+                        <textarea name="paste_content" id="pasteContent" rows="8"
+                            class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm"
+                            placeholder="Tempel data di sini...&#10;Contoh:&#10;081234567890&#10;081234567891, Budi&#10;081234567892, Siti"></textarea>
+                        <div class="absolute bottom-3 right-3 text-xs text-gray-400">
+                            1 nomor per baris
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">
+                        <i class="bi bi-info-circle"></i> Support format Excel/Notepad. Kolom pertama harus nomor HP.
+                    </p>
+                </div>
+
+                <!-- Segment Selection (hidden by default) -->
+                <div id="segmentSection" class="mb-6 hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Segment</label>
+                    <select name="segment"
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        {% for seg in segments %}
+                        <option value="{{ seg.id }}">{{ seg.name }} ({{ seg.count }} customers)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Message Composer -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-end mb-2">
+                        <label class="block text-sm font-medium text-gray-700">Pesan Broadcast</label>
+                        <!-- TEMPLATE QUICK SELECT -->
+                        <div class="flex items-center gap-2">
+                            <select id="templateSelector"
+                                class="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-gray-50 focus:ring-1 focus:ring-purple-500 outline-none">
+                                <option value="">-- Gunakan Template --</option>
+                                {% for tpl in templates %}
+                                <option value="{{ tpl.id }}" data-message="{{ tpl.message }}">{{ tpl.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button type="button" onclick="applyTemplate()"
+                                class="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded-lg font-bold hover:bg-purple-200 transition">
+                                APPLY
+                            </button>
+                        </div>
+                    </div>
+                    <textarea name="message" id="messageBox" rows="6" required
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                        placeholder="Halo {nama}, ada promo spesial untuk Anda!&#10;&#10;Gunakan {nama} untuk personalisasi otomatis."></textarea>
+                    <div class="flex justify-between mt-2">
+                        <div class="flex items-center gap-4">
+                            <p class="text-xs text-gray-500">
+                                <i class="bi bi-info-circle"></i> Gunakan <code
+                                    class="bg-gray-100 px-2 py-1 rounded">{nama}</code> untuk nama otomatis
+                            </p>
+                            <button type="button" onclick="saveAsTemplate()"
+                                class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-lg font-bold hover:bg-blue-100 transition border border-blue-200">
+                                <i class="bi bi-bookmark-plus"></i> Save as Template
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-600" id="charCount">0 karakter</p>
+                    </div>
+                </div>
+
+                <!-- AI Variation Toggle -->
+                <div class="mb-6 p-4 bg-blue-50 rounded-xl">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <i class="bi bi-stars text-blue-600 text-xl"></i>
+                            <div>
+                                <div class="font-semibold text-blue-900">AI Message Variation</div>
+                                <div class="text-xs text-blue-700">Generate 10 variasi unik untuk anti-spam
+                                </div>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="aiVariation" checked class="sr-only peer">
+                            <div
+                                class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- EXECUTION TYPE SELECTOR -->
+                <div class="mb-6 bg-gray-50 p-4 rounded-xl border border-dashed border-gray-300">
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">Opsi Pengiriman</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label
+                            class="relative flex items-center p-3 rounded-lg border border-gray-200 bg-white cursor-pointer hover:border-purple-300 transition">
+                            <input type="radio" name="execution_type" value="now" checked
+                                class="w-4 h-4 text-purple-600 focus:ring-purple-500" onchange="toggleSchedule(false)">
+                            <div class="ml-3">
+                                <p class="text-sm font-bold text-gray-800">Kirim Sekarang</p>
+                                <p class="text-[10px] text-gray-500">Antrean segera diproses</p>
+                            </div>
+                        </label>
+                        <label
+                            class="relative flex items-center p-3 rounded-lg border border-gray-200 bg-white cursor-pointer hover:border-purple-300 transition">
+                            <input type="radio" name="execution_type" value="schedule"
+                                class="w-4 h-4 text-purple-600 focus:ring-purple-500" onchange="toggleSchedule(true)">
+                            <div class="ml-3">
+                                <p class="text-sm font-bold text-gray-800">Jadwalkan</p>
+                                <p class="text-[10px] text-gray-500">Pilih waktu & pengulangan</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- SCHEDULE DETAILS (Hidden by default) -->
+                    <div id="scheduleOptions" class="mt-4 pt-4 border-t border-gray-200 hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Nama
+                                    Jadwal</label>
+                                <input type="text" name="job_name" placeholder="Contoh: Promo Weekend"
+                                    class="w-full text-sm px-3 py-2 rounded-lg border border-gray-300 outline-none focus:ring-1 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Waktu
+                                    Eksekusi</label>
+                                <input type="datetime-local" name="scheduled_at"
+                                    class="w-full text-sm px-3 py-2 rounded-lg border border-gray-300 outline-none focus:ring-1 focus:ring-purple-500">
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Pengulangan</label>
+                            <select name="recurrence"
+                                class="w-full text-sm px-3 py-2 rounded-lg border border-gray-300 outline-none focus:ring-1 focus:ring-purple-500">
+                                <option value="once">Sekali Saja</option>
+                                <option value="daily">Setiap Hari</option>
+                                <option value="weekly">Setiap Minggu</option>
+                                <option value="monthly">Setiap Bulan</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="sendBtn"
+                    class="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold rounded-xl shadow-lg transition transform hover:scale-[1.02]">
+                    <i class="bi bi-send-fill mr-2"></i>
+                    Proses Broadcast
+                </button>
+                </form>
+            </div>
+            <!-- Right Column: Active Jobs & Stats (Sticky) -->
+            <div class="lg:col-span-4 sticky top-6 space-y-6">
+                <!-- PREMIUM BROADCAST STATS CARD -->
+                <div class="rounded-2xl shadow-xl p-1 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
+                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-white h-full">
+                        <div class="flex items-center gap-2 mb-6">
+                            <i class="bi bi-graph-up-arrow"></i>
+                            <h3 class="text-sm font-semibold opacity-95 uppercase tracking-wider">Broadcast Stats</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm opacity-90">Total Sent Today</span>
+                                <span class="text-3xl font-bold" id="todayCountDisplay">{{ sent_today }}</span>
+                            </div>
+                            <div class="h-px bg-white/20"></div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm opacity-90">Active Jobs</span>
+                                <span class="text-3xl font-bold" id="activeCountDisplay">{{ active_jobs_count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scheduled Jobs List -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                            <i class="bi bi-calendar-event text-blue-600"></i> Upcoming Schedules
+                        </h3>
+                    </div>
+                    <div id="scheduledJobs" class="space-y-3">
+                        <p class="text-sm text-gray-400 text-center py-4">No upcoming broadcasts scheduled</p>
+                    </div>
+                </div>
+
+                <!-- Active Jobs List -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                            <i class="bi bi-broadcast-pin text-purple-600"></i> Active Broadcasts
+                        </h3>
+                        <span
+                            class="text-xs font-medium px-2 py-1 bg-purple-50 text-purple-700 rounded-lg animate-pulse">Live</span>
+                    </div>
+                    <div id="activeJobs" class="space-y-3">
+                        <p class="text-sm text-gray-400 text-center py-4">No active broadcasts</p>
+                    </div>
+                </div>
+
+                <!-- Tips Card -->
+                <div
+                    class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl border border-yellow-100 p-6 shadow-sm">
+                    <h3 class="font-bold text-yellow-900 mb-4 flex items-center gap-2">
+                        <i class="bi bi-lightbulb-fill text-yellow-500"></i> Pro Tips
+                    </h3>
+                    <ul class="text-xs text-yellow-800 space-y-3">
+                        <li class="flex items-start gap-2">
+                            <i class="bi bi-check-circle-fill text-yellow-500 mt-0.5"></i>
+                            <span>Gunakan <strong>AI variation</strong> untuk menghindari pemblokiran WA.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="bi bi-check-circle-fill text-yellow-500 mt-0.5"></i>
+                            <span>Personalisasi <code>{nama}</code> meningkatkan engagement hingga 40%.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="bi bi-check-circle-fill text-yellow-500 mt-0.5"></i>
+                            <span>Broadcast di jam kerja (09:00 - 17:00) untuk respon terbaik.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Target type toggle
+        document.querySelectorAll('input[name="target_type"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const csvSec = document.getElementById('csvUploadSection');
+                const pasteSec = document.getElementById('pasteSection');
+                const segSec = document.getElementById('segmentSection');
+
+                // Reset all
+                csvSec.classList.add('hidden');
+                pasteSec.classList.add('hidden');
+                segSec.classList.add('hidden');
+
+                if (e.target.value === 'csv') {
+                    csvSec.classList.remove('hidden');
+                } else if (e.target.value === 'paste') {
+                    pasteSec.classList.remove('hidden');
+                } else if (e.target.value === 'segment') {
+                    segSec.classList.remove('hidden');
+                }
+            });
+        });
+
+        // CSV file display
+        document.getElementById('csvFile').addEventListener('change', (e) => {
+            const fileName = e.target.files[0]?.name;
+            if (fileName) {
+                document.getElementById('fileName').textContent = `📄 ${fileName}`;
+                document.getElementById('fileName').classList.remove('hidden');
+            }
+        });
+
+        // Character counter
+        document.getElementById('messageBox').addEventListener('input', (e) => {
+            document.getElementById('charCount').textContent = `${e.target.value.length} karakter`;
+        });
+
+        // Form submission
+        // Form submission intercept
+        let pendingFormData = null;
+
+        document.getElementById('broadcastForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            pendingFormData = new FormData(e.target);
+
+            // Populate Confirmation Data
+            const targetType = pendingFormData.get('target_type');
+            let countText = 'Calculating...';
+
+            // Simple estimation based on input type
+            if (targetType === 'csv') {
+                const file = document.getElementById('csvFile').files[0];
+                countText = file ? `CSV: ${file.name}` : 'No file';
+            } else if (targetType === 'segment') {
+                const sel = document.querySelector('select[name="segment"]');
+                countText = sel.options[sel.selectedIndex].text;
+            } else {
+                const lines = document.getElementById('pasteContent').value.split('\n').filter(l => l.trim());
+                countText = `${lines.length} Manual Inputs`;
+            }
+
+            document.getElementById('confirmTargetCount').textContent = countText;
+            document.getElementById('confirmEstTime').textContent = "± 1-5 Mins"; // Placeholder
+
+            const isAI = document.getElementById('aiVariation').checked;
+            const aiBadge = document.getElementById('confirmAI');
+            aiBadge.textContent = isAI ? 'Active ✨' : 'Disabled';
+            aiBadge.className = isAI ? 'font-bold text-green-600' : 'font-bold text-gray-400';
+
+            // Show Modal with Animation
+            const modal = document.getElementById('confirmationModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.remove('hidden');
+            // Small delay to trigger transition
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        });
+
+        function hideConfirmation() {
+            const modal = document.getElementById('confirmationModal');
+            const content = document.getElementById('modalContent');
+
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        async function executeBroadcast() {
+            hideConfirmation();
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<i class="bi bi-hourglass-split mr-2"></i> Launching Rocket...';
+
+            try {
+                const response = await fetch('/superadmin/broadcast/send', {
+                    method: 'POST',
+                    body: pendingFormData
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    // Success Toast
+                    alert(`✅ ${result.message}`);
+                    location.reload();
+                } else {
+                    alert(`❌ Error: ${result.message}`);
+                }
+            } catch (error) {
+                alert(`❌ Network error: ${error.message}`);
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<i class="bi bi-send-fill mr-2"></i> Proses Broadcast';
+            }
+        }
+
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchActiveJobs();
+            fetchScheduledJobs(); // NEW: Poll scheduled jobs
+            setInterval(fetchActiveJobs, 5000);
+            setInterval(fetchScheduledJobs, 10000); // Poll slower
+        });
+
+        // NEW: Fetch Scheduled Jobs
+        async function fetchScheduledJobs() {
+            try {
+                const response = await fetch('/superadmin/api/active-schedules');
+                const data = await response.json();
+                renderScheduledJobs(data);
+            } catch (error) {
+                console.error('Error fetching schedules:', error);
+            }
+        }
+
+        function renderScheduledJobs(schedules) {
+            const container = document.getElementById('scheduledJobs');
+            if (!container) return; // Guard clause
+
+            if (schedules.length === 0) {
+                container.innerHTML = '<p class="text-sm text-gray-400 text-center py-4">No upcoming broadcasts scheduled</p>';
+                return;
+            }
+
+            container.innerHTML = schedules.map(job => `
+                <div class="border border-gray-100 rounded-xl p-4 hover:bg-gray-50 transition-colors">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-bold text-gray-800">${job.name}</span>
+                                <span class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">
+                                    <i class="bi bi-clock"></i> ${job.scheduled_at} ${job.tz_label}
+                                </span>
+                                ${job.recurrence !== 'once' ?
+                    `<span class="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full uppercase">${job.recurrence}</span>`
+                    : ''}
+                            </div>
+                            <div class="text-sm text-gray-500 mb-2">
+                                Type: <span class="font-medium text-gray-700">${job.target_type}</span> • 
+                                Targets: <span class="font-medium text-gray-700">${job.target_count}</span>
+                            </div>
+                            <div class="text-xs text-gray-400 bg-gray-50 p-2 rounded border border-dashed border-gray-200 line-clamp-2">
+                                "${job.message_preview}"
+                            </div>
+                        </div>
+                        <button onclick="deleteSchedule(${job.id})" class="text-red-500 hover:text-red-700 p-2 bg-red-50 rounded-lg transition" title="Cancel Schedule">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // NEW: Delete Schedule
+        async function deleteSchedule(id) {
+            if (!confirm('Are you sure you want to cancel this scheduled broadcast?')) return;
+
+            try {
+                const response = await fetch(`/superadmin/api/schedule/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    // Quick feedback
+                    fetchScheduledJobs();
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                alert('Failed to delete schedule');
+            }
+        }
+
+        // Poll active jobs every 5 seconds
+        async function fetchActiveJobs() {
+            try {
+                const response = await fetch('/superadmin/api/active-jobs');
+                const data = await response.json();
+
+                const activeJobsDiv = document.getElementById('activeJobs');
+                const jobs = data.jobs || [];
+
+                if (jobs.length === 0) {
+                    activeJobsDiv.innerHTML = '<p class="text-sm text-gray-400 text-center py-4">No active broadcasts</p>';
+                } else {
+                    activeJobsDiv.innerHTML = jobs.map(job => {
+                        const total = job.total || 1; // avoid division by zero
+                        const percent = Math.min((job.processed / total * 100), 100);
+                        const isRunning = job.status === 'RUNNING';
+                        const isPaused = job.status === 'PAUSED';
+                        const isCompleted = job.status === 'COMPLETED';
+                        const isCancelled = job.status === 'CANCELLED';
+
+                        // Control Buttons Logic
+                        let controls = '';
+                        if (!isCompleted && !isCancelled) {
+                            const pauseBtn = `<button onclick="controlJob(${job.id}, 'pause')" class="p-1.5 hover:bg-yellow-100 text-yellow-600 rounded-lg transition" title="Pause"><i class="bi bi-pause-fill text-lg"></i></button>`;
+                            const resumeBtn = `<button onclick="controlJob(${job.id}, 'resume')" class="p-1.5 hover:bg-green-100 text-green-600 rounded-lg transition" title="Resume"><i class="bi bi-play-fill text-lg"></i></button>`;
+                            const stopBtn = `<button onclick="controlJob(${job.id}, 'stop')" class="p-1.5 hover:bg-red-100 text-red-600 rounded-lg transition" title="Stop Permanently"><i class="bi bi-stop-fill text-lg"></i></button>`;
+
+                            controls = `
+                                <div class="flex items-center bg-white border border-gray-200 rounded-lg shadow-sm">
+                                    ${isPaused ? resumeBtn : pauseBtn}
+                                    <div class="w-px h-4 bg-gray-200"></div>
+                                    ${stopBtn}
+                                </div>
+                             `;
+                        } else if (isCompleted && job.failed > 0) {
+                            controls = `
+                                <div class="flex items-center gap-2">
+                                    <a href="/superadmin/broadcast/${job.id}/download_failed" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg border border-red-200 transition text-[10px] font-bold" title="Download Failure Report">
+                                        <i class="bi bi-file-earmark-arrow-down"></i> CSV
+                                    </a>
+                                    <button onclick="controlJob(${job.id}, 'retry')" class="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-600 hover:bg-orange-100 rounded-lg border border-orange-200 transition text-[10px] font-bold">
+                                        <i class="bi bi-arrow-clockwise"></i> RETRY
+                                    </button>
+                                </div>
+                             `;
+                        }
+
+                        // Live Queue Rendering (Last 5 processed or current sending)
+                        let liveQueue = '';
+                        if (job.target_list && job.target_list.length > 0) {
+                            // Show window of targets around current index
+                            const startIdx = Math.max(0, job.processed - 2);
+                            const endIdx = Math.min(job.total, job.processed + 3);
+                            const visibleTargets = job.target_list.slice(startIdx, endIdx);
+
+                            liveQueue = `
+                                <div class="mt-4 p-2 bg-white/50 rounded-lg border border-gray-100">
+                                    <div class="flex items-center gap-1.5 mb-2 px-1">
+                                        <div class="h-1 w-1 rounded-full bg-blue-500"></div>
+                                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Live Queue</span>
+                                    </div>
+                                    <div class="space-y-1">
+                                        ${visibleTargets.map((t, i) => {
+                                const idxInAll = startIdx + i;
+                                const isCurrent = idxInAll === job.processed;
+                                const status = t.status || (idxInAll < job.processed ? 'success' : 'pending');
+
+                                let icon = '<i class="bi bi-circle text-gray-300"></i>';
+                                let statusColor = 'text-gray-400';
+                                let errorMsg = '';
+
+                                if (status === 'success') {
+                                    icon = '<i class="bi bi-check-circle-fill text-green-500"></i>';
+                                    statusColor = 'text-gray-600';
+                                } else if (status === 'failed') {
+                                    icon = '<i class="bi bi-x-circle-fill text-red-500"></i>';
+                                    statusColor = 'text-red-700 font-medium';
+                                    if (t.error) {
+                                        errorMsg = `<div class="text-[9px] text-red-500 ml-5 mt-0.5 truncate max-w-[200px]"><i class="bi bi-exclamation-circle"></i> ${t.error}</div>`;
+                                    }
+                                } else if (status === 'skipped') {
+                                    icon = '<i class="bi bi-skip-forward-circle text-gray-400"></i>';
+                                    statusColor = 'text-gray-400 italic';
+                                } else if (status === 'sending' || isCurrent) {
+                                    icon = '<i class="bi bi-arrow-repeat text-blue-500 animate-spin-slow"></i>';
+                                    statusColor = 'text-blue-600 font-bold';
+                                }
+
+                                return `
+                                                <div class="flex flex-col px-2 py-1 rounded-md ${isCurrent ? 'bg-blue-50 border border-blue-100' : ''}">
+                                                    <div class="flex items-center justify-between">
+                                                        <div class="flex items-center gap-2 overflow-hidden">
+                                                            ${icon}
+                                                            <span class="text-[10px] truncate ${statusColor}">${t.name || t.phone}</span>
+                                                        </div>
+                                                        <span class="text-[8px] font-mono text-gray-400">${t.phone.slice(-4)}</span>
+                                                    </div>
+                                                    ${errorMsg}
+                                                </div>
+                                            `;
+                            }).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        return `
+                        <div class="p-4 ${isCompleted ? 'bg-green-50 border-green-100' : (isPaused ? 'bg-yellow-50 border-yellow-100' : 'bg-gray-50 border-gray-100')} rounded-xl border mb-3 transition-all duration-500">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <span class="text-xs font-bold text-gray-800">Job #${job.id}</span>
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-[10px] ${isCompleted ? 'text-green-600' : (isPaused ? 'text-yellow-600' : (job.locked_until && new Date(job.locked_until) > new Date() ? 'text-orange-500' : 'text-gray-500'))} font-bold uppercase tracking-wider">
+                                            ${isCompleted ? 'SELESAI' : (isPaused ? 'PAUSED' : (job.locked_until && new Date(job.locked_until) > new Date() ? 'COOLING DOWN' : job.status))}
+                                        </p>
+                                        ${job.locked_until && new Date(job.locked_until) > new Date() ? `
+                                            <span class="flex items-center gap-1.5 px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full text-[9px] font-bold animate-pulse">
+                                                <i class="bi bi-hourglass-split"></i> ${Math.ceil((new Date(job.locked_until) - new Date()) / 1000)}s
+                                            </span>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    ${controls}
+                                    <span class="flex h-2 w-2 relative">
+                                        ${isRunning ? '<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>' : ''}
+                                        <span class="relative inline-flex rounded-full h-2 w-2 ${isRunning ? 'bg-blue-500' : (isCompleted ? 'bg-green-500' : (isPaused ? 'bg-yellow-500' : 'bg-gray-400'))}"></span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center mb-1">
+                                <div class="flex gap-2">
+                                    <span class="text-[10px] font-bold text-green-600">✅ ${job.success}</span>
+                                    <span class="text-[10px] font-bold text-red-600">❌ ${job.failed}</span>
+                                    <span class="text-[10px] font-bold text-gray-400">⚪ ${job.skipped}</span>
+                                </div>
+                                <span class="text-xs font-bold ${isCompleted ? 'text-green-600' : 'text-blue-600'}">${percent.toFixed(0)}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                <div class="${isCompleted ? 'bg-green-500' : (isPaused ? 'bg-yellow-400' : 'bg-gradient-to-r from-blue-500 to-purple-600')} h-full rounded-full transition-all duration-1000 ease-in-out" 
+                                     style="width: ${percent}%"></div>
+                            </div>
+                            ${liveQueue}
+                        </div>
+                    `}).join('');
+                }
+
+                document.getElementById('activeCountDisplay').textContent = data.active_jobs_count || 0;
+                document.getElementById('todayCountDisplay').textContent = data.sent_today || 0;
+            } catch (e) {
+                console.error('Failed to fetch active jobs:', e);
+            }
+        }
+        // Apply Template logic
+        function applyTemplate() {
+            const selector = document.getElementById('templateSelector');
+            const selectedOption = selector.options[selector.selectedIndex];
+            const message = selectedOption.getAttribute('data-message');
+
+            if (message) {
+                if (document.getElementById('messageBox').value && !confirm("Pesan yang ada saat ini akan ditimpa. Lanjutkan?")) {
+                    return;
+                }
+                document.getElementById('messageBox').value = message;
+                document.getElementById('charCount').textContent = `${message.length} karakter`;
+            }
+        }
+        // Save current message as a new template
+        async function saveAsTemplate() {
+            const message = document.getElementById('messageBox').value;
+            if (!message) {
+                alert("Tulis pesan terlebih dahulu sebelum menyimpannya sebagai template.");
+                return;
+            }
+
+            const name = prompt("Beri nama untuk template baru ini:");
+            if (!name) return;
+
+            try {
+                const res = await fetch('/superadmin/api/templates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name, message: message, category: 'general' })
+                });
+
+                if (res.ok) {
+                    alert("✅ Template berhasil disimpan secara instan!");
+                    // Dynamically add to the selector
+                    const selector = document.getElementById('templateSelector');
+                    const newOpt = document.createElement('option');
+                    newOpt.value = "new"; // the actual ID isn't critical for immediate apply
+                    newOpt.setAttribute('data-message', message);
+                    newOpt.textContent = name;
+                    selector.appendChild(newOpt);
+                    selector.value = "new";
+                } else {
+                    alert("❌ Gagal menyimpan template.");
+                }
+            } catch (e) {
+                alert("❌ Kesalahan jaringan.");
+            }
+        }
+        // Toggle Schedule Options
+        // TEMPLATE FUNCTIONS
+        function applyTemplate() {
+            const selector = document.getElementById('templateSelector');
+            const selectedOption = selector.options[selector.selectedIndex];
+            if (selectedOption && selectedOption.dataset.message) {
+                document.getElementById('messageBox').value = selectedOption.dataset.message;
+                updateCharCount();
+            }
+        }
+
+        async function saveAsTemplate() {
+            const message = document.getElementById('messageBox').value;
+            if (!message) {
+                alert("Pesan kosong, tidak bisa disimpan sebagai template.");
+                return;
+            }
+
+            const name = prompt("Masukkan nama template:");
+            if (!name) return;
+
+            try {
+                const res = await fetch('/superadmin/api/templates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, message, category: 'manual' })
+                });
+
+                if (res.ok) {
+                    alert("Template berhasil disimpan! Silakan refresh halaman untuk melihat di daftar.");
+                } else {
+                    alert("Gagal menyimpan template.");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Network error saat menyimpan template");
+            }
+        }
+
+        // Broadcast Control Function
+        async function controlJob(id, action) {
+            if (action === 'stop' && !confirm("Yakin ingin menghentikan broadcast? Proses tidak bisa dilanjutkan!")) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/superadmin/api/broadcast/${id}/status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action })
+                });
+
+                if (res.ok) {
+                    // Force refresh polling immediately
+                    // The interval will pick it up, but we can animate/notify
+                    // Not alerting to keep UI smooth, just relying on UI update
+                } else {
+                    const d = await res.json();
+                    alert("Gagal: " + d.message);
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Network error");
+            }
+        }
+
+        function toggleSchedule(show) {
+            const options = document.getElementById('scheduleOptions');
+            if (show) {
+                options.classList.remove('hidden');
+                // Set default time to now + 5 mins
+                const now = new Date();
+                now.setMinutes(now.getMinutes() + 5);
+                // Adjust timezone offset handling if needed, but local ISO is tricky in JS simpler to:
+                now.setHours(now.getHours() - (now.getTimezoneOffset() / 60)); // Make it behave like local for input
+                const isoString = now.toISOString().slice(0, 16);
+                document.getElementsByName('scheduled_at')[0].value = isoString;
+            } else {
+                options.classList.add('hidden');
+            }
+        }
+    </script>
+
+    <!-- Glassmorphism Confirmation Modal -->
+    <div id="confirmationModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-gray-900/30 backdrop-blur-md transition-opacity duration-300"
+            onclick="hideConfirmation()"></div>
+
+        <!-- Content -->
+        <div class="relative bg-white/90 backdrop-blur-xl border border-white/50 shadow-2xl rounded-2xl p-8 max-w-md w-full transform transition-all duration-300 scale-95 opacity-0"
+            id="modalContent">
+            <div class="text-center">
+                <div
+                    class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-purple-100 mb-6 animate-pulse">
+                    <i class="bi bi-rocket-takeoff-fill text-3xl text-purple-600"></i>
+                </div>
+
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Siap Meluncurkan Broadcast? 🚀</h3>
+
+                <div class="bg-purple-50 rounded-xl p-4 mb-6 text-left space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Target</span>
+                        <span class="font-bold text-gray-800" id="confirmTargetCount">Calculating...</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Estimasi Waktu</span>
+                        <span class="font-bold text-gray-800" id="confirmEstTime">Wait...</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">AI Variation</span>
+                        <span class="font-bold text-gray-400" id="confirmAI">Checking...</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <button type="button" onclick="hideConfirmation()"
+                        class="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition">
+                        Batal
+                    </button>
+                    <button type="button" onclick="executeBroadcast()"
+                        class="px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl font-bold shadow-lg transition transform hover:scale-105">
+                        Kirim Sekarang ✨
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

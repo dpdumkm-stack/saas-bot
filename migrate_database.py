@@ -45,9 +45,9 @@ def migrate():
                 ADD COLUMN last_interaction TIMESTAMP DEFAULT NOW()
             """))
             conn.commit()
-            print("  ✓ Added last_interaction")
+            print("  [OK] Added last_interaction")
         else:
-            print("  ✓ last_interaction already exists")
+            print("  [OK] last_interaction already exists")
         
         # Check and add followup_status
         if not column_exists('customer', 'followup_status'):
@@ -57,9 +57,9 @@ def migrate():
                 ADD COLUMN followup_status VARCHAR(20) DEFAULT 'NONE'
             """))
             conn.commit()
-            print("  ✓ Added followup_status")
+            print("  [OK] Added followup_status")
         else:
-            print("  ✓ followup_status already exists")
+            print("  [OK] followup_status already exists")
         
         # Check and add last_context
         if not column_exists('customer', 'last_context'):
@@ -69,9 +69,9 @@ def migrate():
                 ADD COLUMN last_context TEXT DEFAULT ''
             """))
             conn.commit()
-            print("  ✓ Added last_context")
+            print("  [OK] Added last_context")
         else:
-            print("  ✓ last_context already exists")
+            print("  [OK] last_context already exists")
         
         print()
         print("[2/3] Checking Toko table...")
@@ -84,9 +84,9 @@ def migrate():
                 ADD COLUMN knowledge_base_file_id VARCHAR(100)
             """))
             conn.commit()
-            print("  ✓ Added knowledge_base_file_id")
+            print("  [OK] Added knowledge_base_file_id")
         else:
-            print("  ✓ knowledge_base_file_id already exists")
+            print("  [OK] knowledge_base_file_id already exists")
         
         if not column_exists('toko', 'knowledge_base_name'):
             print("  Adding column: knowledge_base_name")
@@ -95,9 +95,9 @@ def migrate():
                 ADD COLUMN knowledge_base_name VARCHAR(100)
             """))
             conn.commit()
-            print("  ✓ Added knowledge_base_name")
+            print("  [OK] Added knowledge_base_name")
         else:
-            print("  ✓ knowledge_base_name already exists")
+            print("  [OK] knowledge_base_name already exists")
         
         # Check shipping columns
         if not column_exists('toko', 'shipping_origin_id'):
@@ -107,9 +107,9 @@ def migrate():
                 ADD COLUMN shipping_origin_id INTEGER
             """))
             conn.commit()
-            print("  ✓ Added shipping_origin_id")
+            print("  [OK] Added shipping_origin_id")
         else:
-            print("  ✓ shipping_origin_id already exists")
+            print("  [OK] shipping_origin_id already exists")
         
         if not column_exists('toko', 'shipping_couriers'):
             print("  Adding column: shipping_couriers")
@@ -118,9 +118,9 @@ def migrate():
                 ADD COLUMN shipping_couriers VARCHAR(50) DEFAULT 'jne'
             """))
             conn.commit()
-            print("  ✓ Added shipping_couriers")
+            print("  [OK] Added shipping_couriers")
         else:
-            print("  ✓ shipping_couriers already exists")
+            print("  [OK] shipping_couriers already exists")
         
         if not column_exists('toko', 'setup_step'):
             print("  Adding column: setup_step")
@@ -129,9 +129,45 @@ def migrate():
                 ADD COLUMN setup_step VARCHAR(20) DEFAULT 'NONE'
             """))
             conn.commit()
-            print("  ✓ Added setup_step")
+            print("  [OK] Added setup_step")
         else:
-            print("  ✓ setup_step already exists")
+            print("  [OK] setup_step already exists")
+        
+        print()
+        print("[2.5/3] Checking Menu table...")
+        
+        if not column_exists('menu', 'category'):
+            print("  Adding column: category")
+            conn.execute(text("""
+                ALTER TABLE menu 
+                ADD COLUMN category VARCHAR(50) DEFAULT 'Umum'
+            """))
+            conn.commit()
+            print("  [OK] Added category")
+        else:
+            print("  [OK] category already exists")
+            
+        if not column_exists('menu', 'image_url'):
+            print("  Adding column: image_url")
+            conn.execute(text("""
+                ALTER TABLE menu 
+                ADD COLUMN image_url VARCHAR(500)
+            """))
+            conn.commit()
+            print("  [OK] Added image_url")
+        else:
+            print("  [OK] image_url already exists")
+            
+        if not column_exists('menu', 'description'):
+            print("  Adding column: description")
+            conn.execute(text("""
+                ALTER TABLE menu 
+                ADD COLUMN description TEXT
+            """))
+            conn.commit()
+            print("  [OK] Added description")
+        else:
+            print("  [OK] description already exists")
         
         print()
         print("[3/3] Verifying changes...")

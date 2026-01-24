@@ -1,132 +1,399 @@
-<!DOCTYPE html>
-<html lang="id">
+{% extends "dashboard/base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - {{ toko.nama }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+        <p class="text-gray-500">Selamat datang kembali, {{ toko.admin_name }}</p>
+    </div>
 
-<body class="bg-gray-50">
-    <!-- Navbar -->
-    <nav class="bg-white shadow mb-8">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <span class="text-2xl">📊</span>
-                <span class="font-bold text-xl text-gray-800">{{ toko.nama }}</span>
-                <span
-                    class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full uppercase border border-green-200">Active</span>
+    <!-- BOT CONNECTION WARNING BANNER -->
+    <div id="botWarningBanner" style="display: none; background: linear-gradient(135deg, #fef3c7, #fde68a); 
+         border: 2px solid #fbbf24; border-radius: 16px; padding: 16px 20px; margin-bottom: 24px;
+         box-shadow: 0 4px 12px rgba(251, 191, 36, 0.15);">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 250px;">
+                <div style="font-size: 24px;">⚠️</div>
+                <div>
+                    <div style="font-weight: 700; color: #92400e; font-size: 0.95rem; margin-bottom: 4px;">
+                        Bot Belum Terhubung
+                    </div>
+                    <div style="color: #78716c; font-size: 0.85rem;">
+                        Dashboard aktif, tapi bot tidak bisa menerima/balas pesan otomatis
+                    </div>
+                </div>
             </div>
-            <a href="/dashboard/logout" class="text-red-500 hover:text-red-700 font-medium text-sm">Logout</a>
+            <a href="/success?order_id={{ subscription.order_id if subscription else 'default' }}" style="display: inline-flex; align-items: center; gap: 8px; 
+                      background: #f59e0b; color: white; padding: 10px 20px; 
+                      border-radius: 12px; font-weight: 600; font-size: 0.9rem;
+                      text-decoration: none; white-space: nowrap;
+                      transition: all 0.2s; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);"
+                onmouseover="this.style.background='#d97706'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(245, 158, 11, 0.4)';"
+                onmouseout="this.style.background='#f59e0b'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(245, 158, 11, 0.3)';">
+                🔗 Aktivasi Bot Sekarang
+                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
         </div>
-    </nav>
+    </div>
 
-    <div class="container mx-auto px-6">
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                <h3 class="text-gray-500 text-sm font-medium uppercase">Total Chat</h3>
-                <p class="text-3xl font-bold text-gray-800">{{ total_chats }}</p>
-                <span class="text-green-500 text-sm">Interaksi Bot</span>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                <h3 class="text-gray-500 text-sm font-medium uppercase">Pelanggan Unik</h3>
-                <p class="text-3xl font-bold text-gray-800">{{ total_customers }}</p>
-                <span class="text-blue-500 text-sm">Orang</span>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                <h3 class="text-gray-500 text-sm font-medium uppercase">Status Engine</h3>
-                <p class="text-xl font-bold text-gray-800 mt-1">
-                    {% if toko.knowledge_base_file_id %}
-                    <span class="text-green-600">🧠 RAG Aktif</span>
+    <!-- TRIAL ONBOARDING BANNER -->
+    {% if show_trial_banner %}
+    <div style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); 
+         border: 2px solid #3b82f6; border-radius: 16px; padding: 20px; margin-bottom: 24px;
+         box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);">
+        <div style="display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+            <div style="font-size: 32px;">🎉</div>
+            <div style="flex: 1; min-width: 250px;">
+                <div style="font-weight: 700; color: #1e40af; font-size: 1.1rem; margin-bottom: 8px;">
+                    Trial 3 Hari Aktif!
+                </div>
+                <div style="color: #475569; font-size: 0.9rem; margin-bottom: 12px; line-height: 1.5;">
+                    Selamat! Akun dashboard Anda sudah aktif.
+                    <strong style="color: #1e40af;">Langkah terakhir:</strong> Connect bot WhatsApp Anda untuk mulai
+                    menerima order otomatis.
+                </div>
+                <div
+                    style="display: inline-flex; align-items: center; gap: 8px; background: rgba(59, 130, 246, 0.1); 
+                           padding: 8px 14px; border-radius: 10px; font-size: 0.85rem; color: #1e40af; font-weight: 600;">
+                    ⏱️ Sisa:
+                    {% if trial_days_remaining > 0 %}
+                    <strong>{{ trial_days_remaining }} hari {{ trial_hours_remaining }} jam</strong>
                     {% else %}
-                    <span class="text-gray-400">Basic Mode</span>
+                    <strong>{{trial_hours_remaining }} jam lagi</strong>
                     {% endif %}
-                </p>
-                <span class="text-gray-400 text-xs truncate block">{{ toko.knowledge_base_name or 'Belum ada dokumen'
-                    }}</span>
+                </div>
             </div>
-        </div>
-
-        <!-- Chart & Table -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Chart -->
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 lg:col-span-2">
-                <h3 class="text-lg font-bold text-gray-800 mb-4">Aktivitas Chat (7 Hari)</h3>
-                <canvas id="chatChart"></canvas>
-            </div>
-
-            <!-- Recent Chat Table -->
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                <h3 class="text-lg font-bold text-gray-800 mb-4">Pelanggan Terakhir</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-gray-500">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-                            <tr>
-                                <th class="px-3 py-2">Nomor</th>
-                                <th class="px-3 py-2">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for cust in recent_customers %}
-                            <tr class="bg-white border-b hover:bg-gray-50">
-                                <td class="px-3 py-2 text-gray-900 font-medium truncate max-w-[100px]">{{ cust.nomor_hp
-                                    }}</td>
-                                <td class="px-3 py-2">
-                                    {% if cust.order_status == 'WAIT_TRANSFER' %}
-                                    <span class="text-orange-600 text-xs">Menunggu Bayar</span>
-                                    {% elif cust.followup_status == 'SENT' %}
-                                    <span class="text-blue-600 text-xs">Di-Followup</span>
-                                    {% else %}
-                                    <span class="text-gray-400 text-xs">-</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="2" class="text-center py-4">Belum ada data</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <a href="/success?order_id={{ subscription.order_id }}" style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; 
+                          background: #3b82f6; color: white; padding: 14px 24px; 
+                          border-radius: 12px; font-weight: 700; font-size: 0.95rem;
+                          text-decoration: none; white-space: nowrap;
+                          transition: all 0.2s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);"
+                    onmouseover="this.style.background='#2563eb'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(59, 130, 246, 0.4)';"
+                    onmouseout="this.style.background='#3b82f6'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3)';">
+                    🔗 Setup Bot Sekarang
+                    <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                    </svg>
+                </a>
+                <div style="text-align: center; color: #64748b; font-size: 0.75rem;">
+                    (2 menit | Scan QR code)
                 </div>
             </div>
         </div>
     </div>
+    {% endif %}
 
-    <script>
-        // Load Chart Data
-        fetch('/dashboard/api/stats')
-            .then(response => response.json())
-            .then(data => {
-                const ctx = document.getElementById('chatChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: data.labels,
-                        datasets: [{
-                            label: 'Jumlah Chat',
-                            data: data.data,
-                            borderColor: '#25D366',
-                            tension: 0.4,
-                            fill: true,
-                            backgroundColor: 'rgba(37, 211, 102, 0.1)'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: { beginAtZero: true, ticks: { stepSize: 1 } }
-                        }
-                    }
-                });
-            });
-    </script>
-</body>
+    <!-- CANCELLED RETENTION BANNER -->
+    {% if subscription and subscription.status == 'CANCELLED' and subscription.grace_period_ends %}
+    <div
+        class="bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl p-6 text-white shadow-xl mb-8 relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-8 opacity-10 transform translate-x-4 -translate-y-4">
+            <i class="bi bi-clock-history text-8xl"></i>
+        </div>
+        <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-3xl">
+                    ⏳
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold">Masa Tenggang Aktif</h3>
+                    <p class="text-orange-100 text-sm">
+                        Langganan Anda dibatalkan, namun data masih aman sampai
+                        <span class="font-bold underline">{{ subscription.grace_period_ends.strftime('%d %b %Y')
+                            }}</span>.
+                    </p>
+                </div>
+            </div>
+            <button onclick="reactivateSubscription()"
+                class="bg-white text-red-600 px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-orange-50 transition-all flex items-center gap-2">
+                <i class="bi bi-arrow-repeat"></i>
+                Reaktivasi Sekarang
+            </button>
+        </div>
+    </div>
+    {% endif %}
 
-</html>
+    <!-- Quick Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Status Bot -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between">
+            <div>
+                <p class="text-sm text-gray-500 mb-1">Status Bot</p>
+                <div id="statusIndicator" class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-gray-300"></span>
+                    <span class="font-bold text-gray-700">Checking...</span>
+                </div>
+            </div>
+            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                <i class="bi bi-robot text-xl"></i>
+            </div>
+        </div>
+
+        <!-- Total Customers -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between">
+            <div>
+                <p class="text-sm text-gray-500 mb-1">Pelanggan</p>
+                <h3 class="text-2xl font-bold text-gray-800">{{ total_customers }}</h3>
+            </div>
+            <div class="p-3 bg-purple-50 text-purple-600 rounded-xl">
+                <i class="bi bi-people text-xl"></i>
+            </div>
+        </div>
+
+        <!-- Total Chat -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between">
+            <div>
+                <p class="text-sm text-gray-500 mb-1">Total Chat</p>
+                <h3 class="text-2xl font-bold text-gray-800">{{ total_chats }}</h3>
+            </div>
+            <div class="p-3 bg-green-50 text-green-600 rounded-xl">
+                <i class="bi bi-chat-dots text-xl"></i>
+            </div>
+        </div>
+
+        <!-- Subscription -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between">
+            <div>
+                <p class="text-sm text-gray-500 mb-1">Paket</p>
+                <h3 class="text-xl font-bold text-gray-800">{{ subscription.tier if subscription else 'Free' }}</h3>
+                <p class="text-xs text-gray-400 mt-1">
+                    Exp: {{ subscription.expired_at.strftime('%d %b') if subscription and subscription.expired_at else
+                    '-' }}
+                </p>
+            </div>
+            <div class="p-3 bg-yellow-50 text-yellow-600 rounded-xl">
+                <i class="bi bi-star text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content Column -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Settings Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="p-6 border-b border-gray-50">
+                    <h3 class="font-bold text-gray-800">Pengaturan Bot</h3>
+                </div>
+                <div class="p-6 space-y-6">
+                    <!-- Prompt System -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">System Prompt (Instruksi
+                            Utama)</label>
+                        <textarea id="systemPrompt" rows="4"
+                            class="w-full px-4 py-3 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-sm"
+                            placeholder="Contoh: Kamu adalah asisten toko elektronik yang ramah...">{{ system_config.get('system_instructions', '') }}</textarea>
+                        <p class="text-xs text-gray-400 mt-2">Instruksikan bagaimana bot harus berperilaku dan menjawab
+                            pelanggan.</p>
+                    </div>
+
+
+
+                    <!-- Actions -->
+                    <div class="flex items-center justify-end gap-3 pt-4">
+                        <span id="settingsStatus" class="text-sm font-medium hidden"></span>
+                        <button onclick="testConnection()" id="btnTest"
+                            class="px-5 py-2.5 rounded-xl text-gray-600 hover:bg-gray-100 font-medium transition-colors">
+                            Test Koneksi
+                        </button>
+                        <button onclick="saveSettings()" id="btnSave"
+                            class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-lg shadow-blue-500/30 transition-all">
+                            Simpan Pengaturan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Chart -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h3 class="font-bold text-gray-800 mb-6">Aktivitas Chat (7 Hari)</h3>
+                <canvas id="chatChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Sidebar Column -->
+        <div class="space-y-8">
+            <!-- RAG Status -->
+            <div class="bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-2xl p-6 text-white shadow-lg">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-2xl">
+                        🧠
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-400">Knowledge Base</p>
+                        <h3 class="font-bold text-lg">
+                            {% if toko.knowledge_base_file_id %}
+                            <span class="text-green-400">Aktif</span>
+                            {% else %}
+                            <span class="text-gray-400">Non-Aktif</span>
+                            {% endif %}
+                        </h3>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-400 mb-4 bg-white/5 p-3 rounded-lg border border-white/10">
+                    {{ toko.knowledge_base_name or 'Belum ada dokumen yang diupload.' }}
+                </p>
+                <button
+                    class="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-sm font-medium">
+                    Upload Dokumen PDF/TXT
+                </button>
+            </div>
+
+            <!-- Recent Customers -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="p-4 border-b border-gray-50 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-800">Pelanggan Terbaru</h3>
+                    <a href="#" class="text-sm text-blue-600 hover:underline">Lihat Semua</a>
+                </div>
+                <div class="divide-y divide-gray-50">
+                    {% for cust in recent_customers %}
+                    <div class="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500">
+                                {{ cust.nomor_hp[-2:] }}
+                            </div>
+                            <span class="text-sm font-medium text-gray-700">{{ cust.nomor_hp }}</span>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">User</span>
+                    </div>
+                    {% else %}
+                    <div class="p-4 text-center text-gray-400 text-sm">Belum ada pelanggan.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Global Commands Cheat Sheet -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="bi bi-terminal text-blue-600"></i>
+                    Bantuan Perintah WA
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg group cursor-help"
+                        title="Cek status pendaftaran & bantuan terpusat">
+                        <code class="text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded">/help</code>
+                        <span class="text-xs text-gray-500">Menu Bantuan</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg group"
+                        title="Mendapat QR Link untuk koneksi bot">
+                        <code class="text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded">/scan</code>
+                        <span class="text-xs text-gray-500">Link QR Code</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg group"
+                        title="Cek masa aktif paket">
+                        <code class="text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded">/status</code>
+                        <span class="text-xs text-gray-500">Masa Aktif</span>
+                    </div>
+                </div>
+                <p class="text-[10px] text-gray-400 mt-4 italic text-center">
+                    Ketik perintah di atas ke Chat Bot WhatsApp Anda.
+                </p>
+            </div>
+
+            <!-- Subscription Action -->
+            {% if subscription %}
+            <div class="bg-gray-50 rounded-2xl p-6 text-center border border-gray-200">
+                <button onclick="openCancelModal()" class="text-red-600 hover:text-red-700 text-sm font-medium">
+                    Batalkan Langganan
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- CANCEL SUBSCRIPTION MODAL -->
+    <div id="cancelModal"
+        class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/60 backdrop-blur-sm p-4 text-gray-900">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
+            <!-- Header -->
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 class="text-xl font-bold text-gray-800">Batalkan Langganan</h3>
+                <button onclick="closeCancelModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="bi bi-x-lg text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6 space-y-6">
+                <!-- Warning Alert -->
+                <div class="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-xl">
+                    <div class="flex">
+                        <div class="flex-shrink-0 text-orange-400">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-orange-800 font-medium">
+                                Tenang, data Anda tidak langsung dihapus!
+                            </p>
+                            <p class="text-xs text-orange-700 mt-1">
+                                Anda masih memiliki akses dashboard dan data Anda akan disimpan selama 30 hari ke depan
+                                (Grace Period).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="cancelForm" class="space-y-4 text-left">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Alasan Pembatalan</label>
+                        <select id="cancelReason"
+                            class="w-full px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm focus:ring-2 focus:ring-blue-500 transition-all outline-none">
+                            <option value="Harga terlalu mahal">Harga terlalu mahal</option>
+                            <option value="Sulit digunakan">Sulit digunakan</option>
+                            <option value="Fitur kurang lengkap">Fitur kurang lengkap</option>
+                            <option value="Ingin ganti akun">Ingin ganti akun</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Umpan Balik Tambahan
+                            (Opsional)</label>
+                        <textarea id="cancelFeedback" rows="3"
+                            class="w-full px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+                            placeholder="Apa yang bisa kami tingkatkan?"></textarea>
+                    </div>
+
+                    <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <input type="checkbox" id="confirmCancel"
+                            class="mt-1 w-4 h-4 text-blue-600 rounded cursor-pointer">
+                        <label for="confirmCancel" class="text-sm text-gray-600 cursor-pointer">
+                            Saya mengerti bahwa bot akan berhenti merespons pelanggan segera setelah pembatalan
+                            dikonfirmasi.
+                        </label>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-6 border-t border-gray-100 flex gap-3">
+                <button onclick="closeCancelModal()"
+                    class="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-gray-600 font-bold hover:bg-gray-50 transition-all text-sm">
+                    Batal
+                </button>
+                <button type="submit" form="cancelForm" id="btnConfirmCancel" disabled
+                    class="flex-1 px-4 py-3 rounded-xl bg-red-600 text-white font-bold shadow-lg shadow-red-500/30 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm">
+                    Ya, Batalkan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+<!-- Scripts -->
+<script>
+    // Embed data for charts
+    const chartData = {{ chart_data| tojson | safe }};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard_index.js') }}"></script>
+{% endblock %}

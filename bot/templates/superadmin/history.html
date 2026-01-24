@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Broadcast History - Wali.ai</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .nav a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav a.active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .card h2 {
+            color: #1e293b;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-running {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            border-radius: 4px;
+            height: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #667eea;
+            height: 100%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>📊 Broadcast History</h1>
+        <div class="nav">
+            <a href="/superadmin">Dashboard</a>
+            <a href="/superadmin/broadcast">Broadcast</a>
+            <a href="/superadmin/broadcast/history" class="active">History</a>
+            <a href="/superadmin/merchants">Merchants</a>
+            <a href="/superadmin/logout">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2>📨 All Campaigns</h2>
+                <a href="/superadmin/broadcast" class="btn">+ New Broadcast</a>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                        <th>Success Rate</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in jobs %}
+                    <tr>
+                        <td><strong>#{{ job.id }}</strong></td>
+                        <td>{{ job.created_at.strftime('%d %b %Y, %H:%M') }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if job.status == 'COMPLETED' %}badge-success
+                                {% elif job.status == 'RUNNING' %}badge-running
+                                {% else %}badge-pending{% endif %}">
+                                {{ job.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="min-width: 100px;">
+                                <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">
+                                    {{ job.processed }}/{{ job.total_targets }}
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill"
+                                        style="width: {{ (job.processed / job.total_targets * 100) if job.total_targets else 0 }}%">
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <strong
+                                style="color: {% if job.success_rate >= 95 %}#065f46{% elif job.success_rate >= 80 %}#92400e{% else %}#dc2626{% endif %}">
+                                {{ "{:.1f}".format(job.success_rate) }}%
+                            </strong>
+                        </td>
+                        <td>{{ job.message_preview }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
+                            📭 No broadcasts yet. <a href="/superadmin/broadcast" style="color: #667eea;">Create your
+                                first campaign</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>

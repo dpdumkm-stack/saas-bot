@@ -4,569 +4,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pembayaran Berhasil - Aktivasi Bot</title>
+    <title>Satu Langkah Lagi! - Aktivasi Bot UMKM</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css">
-    <style>
-        :root {
-            --primary: #4ade80;
-            --accent: #3b82f6;
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            color: #fff;
-        }
-
-        .container {
-            max-width: 600px;
-            width: 100%;
-        }
-
-        .card {
-            background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 40px 30px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            text-align: center;
-        }
-
-        .icon-vibe {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(59, 130, 246, 0.2));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            border: 1px solid rgba(74, 222, 128, 0.3);
-        }
-
-        .icon-vibe i {
-            font-size: 32px;
-            color: var(--primary);
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            background: linear-gradient(to right, #4ade80, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        p.subtitle {
-            color: #94a3b8;
-            font-size: 1.1rem;
-            margin-bottom: 30px;
-        }
-
-        .qr-section {
-            background: rgba(15, 23, 42, 0.5);
-            border-radius: 20px;
-            padding: 25px;
-            border: 1px dashed rgba(255, 255, 255, 0.2);
-            margin: 20px 0;
-        }
-
-        .qr-section h3 {
-            color: var(--primary);
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-        }
-
-        #qrContainer {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            display: inline-block;
-            margin-bottom: 15px;
-        }
-
-        #qrImage {
-            width: 250px;
-            height: 250px;
-            display: block;
-        }
-
-        .qr-info {
-            color: #94a3b8;
-            font-size: 0.9rem;
-            margin: 0;
-        }
-
-        .steps-section {
-            text-align: left;
-            margin: 30px 0;
-        }
-
-        .steps-section h3 {
-            font-size: 1.1rem;
-            color: #e2e8f0;
-            margin-bottom: 20px;
-        }
-
-        .step-item {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 15px;
-            gap: 12px;
-        }
-
-        .step-num {
-            width: 24px;
-            height: 24px;
-            background: var(--accent);
-            border-radius: 6px;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-
-        .step-text {
-            color: #cbd5e1;
-            font-size: 0.95rem;
-            line-height: 1.4;
-        }
-
-        .btn {
-            padding: 10px 18px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2563eb;
-            transform: translateY(-1px);
-        }
-
-        .btn-success {
-            background: var(--primary);
-            color: #0f172a;
-        }
-
-        .btn-success:hover {
-            background: #22c55e;
-            transform: translateY(-1px);
-        }
-
-        .help-box {
-            margin-top: 25px;
-            text-align: left;
-        }
-
-        .help-toggle {
-            background: rgba(59, 130, 246, 0.15);
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            padding: 12px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 100%;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: all 0.3s;
-        }
-
-        .help-content {
-            display: none;
-            margin-top: 15px;
-            padding: 20px;
-            background: rgba(15, 23, 42, 0.6);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .help-content.active {
-            display: block;
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .option-card {
-            background: rgba(30, 41, 59, 0.5);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .option-card h4 {
-            color: #60a5fa;
-            font-size: 1rem;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .option-card ol {
-            margin: 10px 0;
-            padding-left: 20px;
-            color: #cbd5e1;
-            font-size: 0.9rem;
-            line-height: 1.6;
-        }
-
-        .copy-box {
-            display: flex;
-            gap: 10px;
-            margin: 10px 0;
-        }
-
-        .copy-input {
-            flex: 1;
-            padding: 10px;
-            border-radius: 8px;
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #94a3b8;
-            font-size: 0.85rem;
-        }
-
-        @media (max-width: 640px) {
-            .card {
-                padding: 30px 20px;
-            }
-
-            h1 {
-                font-size: 1.5rem;
-            }
-
-            #qrImage {
-                width: 200px;
-                height: 200px;
-            }
-
-            .copy-box {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/success.css') }}">
 </head>
 
 <body>
     <div class="container">
-        <div class="card">
-            <div class="icon-vibe">
-                <i class="bi bi-check-circle-fill"></i>
+        <!-- Progress Bar -->
+        <div class="progress-stepper">
+            <div class="step completed">
+                <div class="step-circle"><i class="bi bi-check"></i></div>
+                <div class="step-label">Lunas</div>
             </div>
-            <h1>Pembayaran Lunas!</h1>
-            <p class="subtitle">Scan QR Code untuk Aktivasi Bot Anda</p>
-
-            <!-- QR Code Section -->
-            <div class="qr-section">
-                <div style="margin-bottom: 15px;">
-                    <i class="bi bi-qr-code" style="font-size: 2rem; color: var(--accent);"></i>
-                </div>
-                <h3>Scan untuk Menautkan Bot</h3>
-                <div id="qrContainer">
-                    <img id="qrImage" alt="QR Code" />
-                </div>
-                <p class="qr-info">QR akan refresh otomatis setiap 30 detik</p>
+            <div class="step active" id="progStep2">
+                <div class="step-circle">2</div>
+                <div class="step-label">Aktivasi</div>
             </div>
+            <div class="step" id="progStep3">
+                <div class="step-circle">3</div>
+                <div class="step-label">Mulai</div>
+            </div>
+        </div>
 
-            <!-- Instructions -->
-            <div class="steps-section">
-                <h3>Cara Aktivasi Bot</h3>
-                <div class="step-item">
-                    <div class="step-num">1</div>
-                    <div class="step-text">Buka <strong>WhatsApp</strong> di HP Anda</div>
+        <div class="card" id="activationCard">
+            <div id="activationArea">
+                <h1>Siapkan Robot Anda</h1>
+                <p class="subtitle">Scaning QR Code di bawah untuk mulai berjualan</p>
+
+                <div class="status-badge badge-loading" id="statusBadge">
+                    <i class="bi bi-cpu"></i> <span>Menyiapkan Bot...</span>
                 </div>
-                <div class="step-item">
-                    <div class="step-num">2</div>
-                    <div class="step-text">Tap ikon <strong>(3 titik)</strong> → Klik <strong>Perangkat Tertaut</strong>
+
+                <div class="qr-wrapper">
+                    <div class="scanner-line" id="scannerLine"></div>
+                    <div id="qrLoading" style="padding: 60px 40px; color: #64748b;">
+                        <i class="bi bi-arrow-repeat spin"
+                            style="font-size: 2.5rem; display: block; margin-bottom: 10px;"></i>
+                        <span>Sedang Memuat...</span>
                     </div>
+                    <img id="qrImage" src="" alt="WhatsApp QR" style="display:none;" />
                 </div>
-                <div class="step-item">
-                    <div class="step-num">3</div>
-                    <div class="step-text">Tap <strong>"Tautkan Perangkat"</strong> dan scan <strong>QR Code</strong> di
-                        atas</div>
-                </div>
-                <div class="step-item">
-                    <div class="step-num">4</div>
-                    <div class="step-text">Bot akan <strong>aktif otomatis</strong> setelah tersambung!</div>
-                </div>
-            </div>
 
-            <!-- IMPORTANT WARNINGS -->
-            <div
-                style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(245, 158, 11, 0.15)); border: 2px solid rgba(239, 68, 68, 0.4); padding: 18px; border-radius: 12px; margin-top: 25px; text-align: left;">
-                <h4
-                    style="color: #fca5a5; margin-bottom: 12px; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
-                    <i class="bi bi-exclamation-triangle-fill"></i> PENTING! Baca Ini:
-                </h4>
-                <ul style="color: #fcd34d; font-size: 0.95rem; line-height: 1.9; margin: 0; padding-left: 20px;">
-                    <li><strong>QR Code cuma bertahan 2 menit!</strong> Jadi scan segera setelah muncul</li>
-                    <li>Kalau QR hilang/expired, <strong>refresh halaman ini</strong> untuk QR baru</li>
-                    <li>Pastikan <strong>koneksi internet stabil</strong> di kedua device</li>
-                    <li><strong>Yang scan QR = HP yang jadi bot</strong> (jangan terbalik!)</li>
-                    <li>Setelah scan sukses, <strong>jangan logout</strong> dari WhatsApp Web</li>
-                </ul>
-            </div>
-
-            <!-- Quick Selection Buttons -->
-            <div style="margin-top: 25px; text-align: left;">
-                <h4 style="color: #e2e8f0; font-size: 1rem; margin-bottom: 12px; text-align: center;">
-                    <i class="bi bi-lightning-charge-fill"></i> Pilih Situasi Anda (Klik 1x):
-                </h4>
-                <div
-                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 15px;">
-                    <button class="btn btn-success" onclick="quickSelect(1)"
-                        style="padding: 14px 12px; font-size: 0.9rem; flex-direction: column; gap: 4px;">
-                        <span style="font-size: 1.5rem;"><i class="bi bi-phone"></i> + <i
-                                class="bi bi-phone"></i></span>
-                        Punya 2 HP
-                    </button>
-                    <button class="btn btn-primary" onclick="quickSelect(2)"
-                        style="padding: 14px 12px; font-size: 0.9rem; flex-direction: column; gap: 4px;">
-                        <span style="font-size: 1.5rem;"><i class="bi bi-people-fill"></i></span>
-                        HP Keluarga
-                    </button>
-                    <button class="btn" onclick="quickSelect(3)"
-                        style="padding: 14px 12px; font-size: 0.9rem; flex-direction: column; gap: 4px; background: #a78bfa; color: white;">
-                        <span style="font-size: 1.5rem;"><i class="bi bi-laptop"></i></span>
-                        Punya Laptop
-                    </button>
-                </div>
-                <p style="color: #94a3b8; font-size: 0.85rem; text-align: center; margin: 0;">
-                    Atau <a href="#" onclick="toggleHelp(); return false;"
-                        style="color: #60a5fa; text-decoration: underline;">lihat semua panduan lengkap</a>
+                <p style="font-size: 0.75rem; color: #64748b; margin-top: 5px;">
+                    <i class="bi bi-shield-check"></i> Aman & Terenkripsi oleh WhatsApp Official
                 </p>
-            </div>
 
-            <!-- Comprehensive 4-Scenario Help Guide -->
-            <div class="help-box">
-                <button class="help-toggle" onclick="toggleHelp()">
-                    <span><i class="bi bi-question-circle"></i> Panduan Lengkap (Semua Scenario)</span>
-                    <i class="bi bi-chevron-down" id="chevron"></i>
-                </button>
-
-                <div class="help-content" id="helpContent">
-                    <h3 style="color: #60a5fa; font-size: 1.15rem; margin-bottom: 10px; text-align: center;">
-                        <i class="bi bi-hand-index-thumb"></i> Pilih Situasi Anda
-                    </h3>
-
-                    <!-- Scenario 1: Punya 2 HP -->
-                    <div class="option-card" id="scenario1" style="border: 2px solid rgba(74, 222, 128, 0.3);">
-                        <h4><i class="bi bi-phone"></i><i class="bi bi-phone" style="margin-left: -8px;"></i> Saya Punya
-                            2 HP Sendiri</h4>
-                        <ol>
-                            <li><strong>Copy link</strong> halaman ini dengan tombol di bawah</li>
-                            <li><strong>Buka link</strong> tersebut di <strong>HP kedua</strong> Anda</li>
-                            <li><strong>QR Code akan muncul</strong> di layar HP kedua</li>
-                            <li><strong>Ambil HP pertama</strong> (yang akan jadi bot)</li>
-                            <li><strong>Scan QR</strong> dari layar HP kedua</li>
-                        </ol>
-                        <div class="copy-box">
-                            <input id="linkCopy1" class="copy-input" type="text" readonly />
-                            <button class="btn btn-primary" onclick="copyLink('linkCopy1')">
-                                <i class="bi bi-clipboard"></i> Copy Link
-                            </button>
-                        </div>
+                <div class="help-grid">
+                    <div class="help-card" onclick="showHelp('help2hp')">
+                        <i class="bi bi-phone-vibrate"></i>
+                        <span>Punya 2 HP</span>
                     </div>
-
-                    <!-- Scenario 2: HP Keluarga -->
-                    <div class="option-card" id="scenario2" style="border: 2px solid rgba(59, 130, 246, 0.3);">
-                        <h4><i class="bi bi-people-fill"></i> Pakai HP Istri/Suami/Anak</h4>
-                        <div
-                            style="background: rgba(59, 130, 246, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-                            <strong style="color: #60a5fa;">Cara 1: Kirim Link</strong>
-                            <ol style="margin-top: 8px;">
-                                <li><strong>Copy link</strong> → Kirim ke HP keluarga via WhatsApp</li>
-                                <li>Minta mereka <strong>buka link</strong> tersebut</li>
-                                <li><strong>Scan QR</strong> dari HP mereka dengan HP Anda</li>
-                            </ol>
-                        </div>
-
-                        <div style="background: rgba(74, 222, 128, 0.1); padding: 12px; border-radius: 8px;">
-                            <strong style="color: var(--primary);">Cara 2: Download QR</strong>
-                            <ol style="margin-top: 8px;">
-                                <li><strong>Download QR</strong> → Kirim gambar ke keluarga</li>
-                                <li>Minta mereka <strong>buka gambar</strong> di HP mereka</li>
-                                <li><strong>Scan QR</strong> dari layar HP mereka</li>
-                            </ol>
-                            <button class="btn btn-success" onclick="downloadQRCode()" style="margin-top: 10px;">
-                                <i class="bi bi-download"></i> Download QR Code
-                            </button>
-                        </div>
-
-                        <div class="copy-box" style="margin-top: 12px;">
-                            <input id="linkCopy2" class="copy-input" type="text" readonly />
-                            <button class="btn btn-primary" onclick="copyLink('linkCopy2')">
-                                <i class="bi bi-clipboard"></i> Copy Link
-                            </button>
-                        </div>
+                    <div class="help-card" onclick="showHelp('helpLink')">
+                        <i class="bi bi-share"></i>
+                        <span>Kirim Link</span>
                     </div>
-
-                    <!-- Scenario 3: Punya Laptop -->
-                    <div class="option-card" id="scenario3" style="border: 2px solid rgba(168, 85, 247, 0.3);">
-                        <h4><i class="bi bi-laptop"></i> Saya Punya Laptop/Komputer</h4>
-                        <ol>
-                            <li><strong>Copy link</strong> halaman ini</li>
-                            <li><strong>Buka laptop</strong> Anda dan <strong>Paste link</strong> di browser</li>
-                            <li>QR besar akan muncul di <strong>layar laptop</strong></li>
-                            <li>Ambil <strong>HP Anda</strong>, scan QR dari layar laptop</li>
-                        </ol>
-                        <div class="copy-box">
-                            <input id="linkCopy3" class="copy-input" type="text" readonly />
-                            <button class="btn btn-primary" onclick="copyLink('linkCopy3')">
-                                <i class="bi bi-clipboard"></i> Copy Link
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Help CTA -->
-                    <div
-                        style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 14px; border-radius: 10px; margin-top: 20px; text-align: center;">
-                        <p style="color: #fca5a5; font-size: 0.95rem; margin: 0;">
-                            <i class="bi bi-camera-video"></i> Sudah baca panduan tapi masih bingung?<br>
-                            <strong style="color: #60a5fa;">Hubungi admin</strong> untuk panduan video call!
-                        </p>
+                    <div class="help-card" onclick="showHelp('helpLaptop')">
+                        <i class="bi bi-laptop"></i>
+                        <span>Pakai Laptop</span>
                     </div>
                 </div>
+
+                <!-- Help Details -->
+                <div id="help2hp" class="detail-box">
+                    <h4 style="color: var(--accent); margin-bottom: 8px;"><i class="bi bi-info-circle"></i> Opsi 2 HP
+                    </h4>
+                    <p style="font-size: 0.85rem; color: #94a3b8;">Foto QR di atas pakai HP teman/keluarga, lalu buka HP
+                        Anda dan scan foto tersebut di menu <strong>Perangkat Tertaut</strong>.</p>
+                </div>
+
+                <div id="helpLink" class="detail-box">
+                    <h4 style="color: var(--accent); margin-bottom: 8px;"><i class="bi bi-share"></i> Opsi Kirim Link
+                    </h4>
+                    <p style="font-size: 0.85rem; color: #94a3b8;">Buka halaman ini di HP keluarga, lalu scan dari HP
+                        Anda. Klik salin link di bawah:</p>
+                    <div class="copy-group">
+                        <input type="text" id="shareLink" class="copy-input" readonly value="">
+                        <button class="btn-copy" onclick="copyLink(event)">SALIN</button>
+                    </div>
+                </div>
+
+                <div id="helpLaptop" class="detail-box">
+                    <h4 style="color: var(--accent); margin-bottom: 8px;"><i class="bi bi-laptop"></i> Opsi Laptop</h4>
+                    <p style="font-size: 0.85rem; color: #94a3b8;">Buka browser di Laptop, kunjungi link ini, lalu scan
+                        QR yang muncul di layar laptop pakai HP Anda.</p>
+                </div>
+
+                <button class="btn-reset" onclick="forceNewQR()">
+                    <i class="bi bi-arrow-counterclockwise"></i> QR Tidak Muncul? Reset Sesi
+                </button>
+            </div>
+
+            <div id="successArea" style="display: none; padding: 20px 0;">
+                <div class="celebration-icon">
+                    <i class="bi bi-rocket-takeoff-fill"></i>
+                </div>
+                <h1
+                    style="background: linear-gradient(to right, #4ade80, #22c55e); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                    Bot Berhasil Aktif!</h1>
+                <p class="subtitle">Selamat! WhatsApp Anda sekarang resmi menjadi asisten otomatis UMKM Anda.</p>
+
+                <div
+                    style="background: rgba(34, 197, 94, 0.05); border: 1px solid rgba(34, 197, 94, 0.2); padding: 20px; border-radius: 20px; text-align: left; margin-bottom: 25px;">
+                    <p style="color: var(--primary); font-weight: 700; margin-bottom: 10px;">Apa selanjutnya?</p>
+                    <ul style="color: #94a3b8; font-size: 0.9rem; list-style: none;">
+                        <li style="margin-bottom: 8px;"><i class="bi bi-check2-circle"
+                                style="color: var(--primary);"></i> Cek pesan masuk di WhatsApp Anda</li>
+                        <li style="margin-bottom: 8px;"><i class="bi bi-check2-circle"
+                                style="color: var(--primary);"></i> Atur produk & harga di Dashboard</li>
+                        <li><i class="bi bi-check2-circle" style="color: var(--primary);"></i> Bagikan nomor ke
+                            pelanggan!</li>
+                    </ul>
+                </div>
+
+                <button class="btn-copy" onclick="window.location.href='/dashboard'"
+                    style="width:100%; height: 55px; border-radius: 14px; font-size: 1rem;">
+                    MASUK KE DASHBOARD <i class="bi bi-arrow-right-short"></i>
+                </button>
             </div>
         </div>
     </div>
 
-    <script>
-        const params = new URLSearchParams(window.location.search);
-        const orderId = params.get('order_id');
-
-        if (!orderId) {
-            alert('Order ID tidak ditemukan di URL.');
-        } else {
-            const currentUrl = window.location.href;
-            document.getElementById('linkCopy1').value = currentUrl;
-            document.getElementById('linkCopy2').value = currentUrl;
-            document.getElementById('linkCopy3').value = currentUrl;
-
-            loadQR();
-            setInterval(loadQR, 30000);
-        }
-
-        function loadQR() {
-            const qrImg = document.getElementById('qrImage');
-            qrImg.src = '/api/qr?session=' + orderId + '&t=' + Date.now();
-            qrImg.onerror = function () {
-                qrImg.style.display = 'none';
-                document.getElementById('qrContainer').innerHTML = '<p style="color: #ef4444; padding: 20px;">Gagal memuat QR. Refresh halaman.</p>';
-            };
-        }
-
-        function toggleHelp() {
-            const content = document.getElementById('helpContent');
-            const chevron = document.getElementById('chevron');
-            content.classList.toggle('active');
-            chevron.classList.toggle('bi-chevron-up');
-            chevron.classList.toggle('bi-chevron-down');
-        }
-
-        function quickSelect(num) {
-            const content = document.getElementById('helpContent');
-            const chevron = document.getElementById('chevron');
-            if (!content.classList.contains('active')) {
-                content.classList.add('active');
-                chevron.classList.replace('bi-chevron-down', 'bi-chevron-up');
-            }
-            // Hide all first
-            const scenarios = ['scenario1', 'scenario2', 'scenario3'];
-            scenarios.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.boxShadow = 'none';
-            });
-            // Highlight selected
-            const target = document.getElementById('scenario' + num);
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                target.style.boxShadow = '0 0 15px rgba(59, 130, 246, 0.5)';
-            }
-        }
-
-        async function copyLink(inputId) {
-            const input = document.getElementById(inputId);
-            try {
-                await navigator.clipboard.writeText(input.value);
-                alert('Link disalin! Kirimkan link ini ke HP lain atau buka di Laptop untuk melihat QR Code.');
-            } catch (err) {
-                input.select();
-                document.execCommand('copy');
-                alert('Link disalin!');
-            }
-        }
-
-        async function downloadQRCode() {
-            const qrImg = document.getElementById('qrImage');
-            try {
-                const res = await fetch(qrImg.src);
-                const blob = await res.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'QR_Aktivasi_Bot.png';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-                alert('QR Code diunduh! Kirimkan ke HP keluarga untuk di-scan.');
-            } catch (err) {
-                alert('Gagal mengunduh QR Code. Silakan screenshot manual.');
-            }
-        }
-    </script>
+    <script src="{{ url_for('static', filename='js/success.js') }}"></script>
 </body>
 
 </html>

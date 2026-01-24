@@ -17,14 +17,20 @@ class Config:
     # Production: https://waha-2sl8ak8iil6s.sgp-kresna.sumopod.my.id
     WAHA_BASE_URL = os.environ.get('WAHA_BASE_URL', 'https://waha-2sl8ak8iil6s.sgp-kresna.sumopod.my.id') 
     WAHA_API_KEY = os.environ.get('WAHA_API_KEY', '')  # Required for SUMOPOD API access
+    CRON_SECRET = os.environ.get('CRON_SECRET', 'RahasiaNegara123')
+
     
     # Session Configuration
     MASTER_SESSION = os.environ.get('MASTER_SESSION', 'default')
     TARGET_LIMIT_USER = int(os.environ.get('TARGET_LIMIT_USER', '500'))
     WARNING_THRESHOLD = int(os.environ.get('WARNING_THRESHOLD', '450'))
     
+    # Webhook Security
+    WEBHOOK_SECRET = os.environ.get('WEBHOOK_SECRET', '') 
+
     # Webhook URL (set in SUMOPOD to point to Cloud Run)
-    WAHA_WEBHOOK_URL = os.environ.get('WAHA_WEBHOOK_URL', 'https://saas-bot-643221888510.asia-southeast2.run.app/routes/webhook')
+    WAHA_WEBHOOK_URL = os.environ.get('WAHA_WEBHOOK_URL', 'https://saas-bot-643221888510.asia-southeast2.run.app/webhook')
+    WEBHOOK_URL = os.environ.get('WEBHOOK_URL', 'https://saas-bot-643221888510.asia-southeast2.run.app/webhook')
     
     # RajaOngkir
     RAJAONGKIR_API_KEY = os.environ.get('RAJAONGKIR_API_KEY', 'your_key_here')
@@ -34,3 +40,10 @@ class Config:
     MIDTRANS_SERVER_KEY = os.environ.get('MIDTRANS_SERVER_KEY', '')
     MIDTRANS_CLIENT_KEY = os.environ.get('MIDTRANS_CLIENT_KEY', '')
     MIDTRANS_IS_PRODUCTION = os.environ.get('MIDTRANS_IS_PRODUCTION', 'False').lower() == 'true'
+
+    # Pricing Configuration
+    PRICING_PACKAGES = {
+        "STARTER": {"price": 99000, "name": "Starter Plan (1 Bulan)", "duration": 30},
+        "PRO": {"price": 199000, "name": "Pro Plan (1 Bulan)", "duration": 30},
+        "BUSINESS": {"price": 499000, "name": "Business Plan (3 Bulan)", "duration": 90}
+    }

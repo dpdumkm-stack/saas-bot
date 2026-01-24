@@ -16,7 +16,7 @@ if (-not $env:CLOUDSDK_PYTHON) {
 
 Write-Host "[1/3] Deploying to Cloud Run..." -ForegroundColor Yellow
 gcloud run deploy saas-bot `
-    --source ./bot `
+    --source . `
     --region asia-southeast2 `
     --allow-unauthenticated `
     --set-env-vars="MIGRATE_DB=true"

@@ -33,51 +33,13 @@ def midtrans_notification():
 
         
     if status in ['settlement', 'capture']:
-        # Double check status to prevent multiple activations
-        if sub.payment_status != 'paid':
-            sub.payment_status = 'paid'
-            sub.status = 'ACTIVE'
-            sub.active_at = datetime.now()
-            sub.expired_at = datetime.now() + timedelta(days=31)
-            sub.step = 0
-            
-            session_name = f"session_{sub.phone_number}"
-            toko = Toko.query.get(sub.phone_number)
-            if not toko:
-                toko = Toko(
-                    id=sub.phone_number,
-                    nama=sub.name,
-                    kategori=sub.category,
-                    session_name=session_name,
-                    remote_token=str(uuid.uuid4())[:8],
-                    status_active=True
-                )
-                db.session.add(toko)
-            else:
-                toko.session_name = session_name
-                toko.status_active = True
-                toko.nama = sub.name # Sync name
-                
-            db.session.commit()
-            
-            # Start WAHA Session in background
-            from threading import Thread
-            Thread(target=create_waha_session, args=(session_name,)).start()
-            
-            # Notify master bot
-            success_url = f"https://saas-bot-643221888510.asia-southeast2.run.app/success?order_id={order_id}"
-            msg_success = (
-                f"✅ **PEMBAYARAN DITERIMA!**\n\n"
-                f"Terima kasih {sub.name}, akun Anda kini telah aktif! 🚀\n\n"
-                f"Silakan klik link di bawah ini untuk mengaktifkan bot dengan **SCAN QR CODE**:\n\n"
-                f"👉 {success_url}\n\n"
-                f"_(Buka link di atas, lalu scan QR code dengan WhatsApp Anda)_"
-            )
-
-
-            kirim_waha(f"{sub.phone_number}@c.us", msg_success, MASTER_SESSION)
-            
-            logging.info(f"Bot Activated successfully for {sub.phone_number}")
+        from app.services.subscription_manager import activate_subscription
+        
+        success = activate_subscription(order_id)
+        if success:
+             return jsonify({"status": "ok", "message": "activated"}), 200
+        else:
+             return jsonify({"status": "error", "message": "activation_failed"}), 500
             
     elif status in ['expire', 'cancel', 'deny']:
         sub.payment_status = 'failed'

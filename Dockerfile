@@ -1,5 +1,5 @@
 # Gunakan image Python resmi yang ringan sebagai dasar
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 # Set folder kerja di dalam kontainer ke /app
 WORKDIR /app
@@ -10,14 +10,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Salin file requirements.txt dari folder bot/ ke dalam kontainer
-COPY bot/requirements.txt .
+# Salin file requirements.txt dari root ke dalam kontainer
+COPY requirements.txt .
 
 # Install semua library Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Salin seluruh isi folder bot/ ke dalam kontainer
-COPY bot/ .
+# Salin seluruh isi folder project ke dalam kontainer
+COPY . .
 
-# Jalankan aplikasi menggunakan Gunicorn
+# Set PYTHONPATH dan ubah working directory ke /app/bot
+WORKDIR /app/bot
+ENV PYTHONPATH=/app/bot
+
+# Jalankan aplikasi menggunakan module run.py
 CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "run:app"]

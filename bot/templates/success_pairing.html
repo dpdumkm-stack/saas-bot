@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Aktivasi Bot WhatsApp - Scan QR untuk menghubungkan bot">
+    <title>Aktivasi Bot - Wali.ai</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/success_pairing.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <div id="activationArea">
+            <h1 id="pageTitle">🤖 Aktivasi Bot WhatsApp</h1>
+            <p class="subtitle" id="pageSubtitle">Ikuti langkah di bawah untuk menghubungkan bot</p>
+
+            <!-- Method indicator (no toggle) -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <span id="methodBadge"
+                    style="display: inline-block; padding: 8px 16px; background: rgba(59, 130, 246, 0.1); color: #60a5fa; border-radius: 20px; font-size: 0.85rem; font-weight: 600;"></span>
+            </div>
+
+            <!-- INFO BANNER: Clarify Dashboard vs Bot Activation -->
+            <div class="info-banner">
+                <div class="info-banner-icon">⚠️</div>
+                <div class="info-banner-content">
+                    <h3>Penting: 2 Langkah Terpisah</h3>
+                    <p>
+                        ✅ <strong>Dashboard sudah bisa diakses</strong> - Anda bisa atur produk & settings sekarang
+                    </p>
+                    <p>
+                        🤖 <strong>Bot BELUM aktif!</strong> Scan QR di bawah agar bot bisa balas pesan pelanggan
+                        otomatis
+                    </p>
+                </div>
+            </div>
+
+            <!-- QR Section -->
+            <div class="qr-section {% if active_method == 'qr' %}active{% endif %}" id="qrSection">
+                <p style="color: #94a3b8; margin-bottom: 15px; font-size: 0.9rem;">
+                    ✅ Cepat & Mudah (Perlu 2 device)
+                </p>
+
+                <div class="qr-box">
+                    <!-- Loading State -->
+                    <div id="qrLoading" class="qr-loading">
+                        <div class="qr-spinner"></div>
+                        <p class="qr-loading-text">Memuat QR Code...</p>
+                    </div>
+
+                    <!-- QR Image -->
+                    <img id="qrImage" src="" alt="QR Code" style="display: none;" />
+
+                    <!-- Error State -->
+                    <div id="qrError" class="qr-error" style="display: none;">
+                        <div class="qr-error-icon">⚠️</div>
+                        <p class="qr-error-text">Gagal memuat QR Code</p>
+                        <button class="qr-retry-btn" onclick="retryLoadQR()">🔄 Coba Lagi</button>
+                    </div>
+                </div>
+
+                <div class="step-guide">
+                    <h3>📖 Cara Scan QR:</h3>
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-text">Buka WhatsApp di <span class="emph">HP Anda</span></div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-text">Klik titik 3 <span class="emph">(⋮)</span> pojok kanan atas</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-text">Pilih <span class="emph">"Perangkat Tertaut"</span></div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-text">Tap <span class="emph">"Tautkan Perangkat"</span></div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-text">Scan QR di atas ☝️</div>
+                    </div>
+                </div>
+
+                <div class="footer-hint">
+                    💡 <strong>HP cuma 1?</strong>
+                    <a href="#" onclick="switchMethod('code')">Ganti ke Pairing Code</a>
+                </div>
+            </div>
+
+            <!-- Pairing Code Section -->
+            <div class="code-section {% if active_method == 'code' %}active{% endif %}" id="codeSection">
+                <p style="color: #94a3b8; margin-bottom: 15px; font-size: 0.9rem;">
+                    ✅ Untuk yang hanya punya 1 HP
+                </p>
+
+                <div class="code-display">
+                    <div class="code-label">Kode Anda:</div>
+                    <div class="code-value" id="pairingCode">----</div>
+                    <button class="copy-btn" id="copyCodeBtn" onclick="copyCode()">
+                        📋 SALIN KODE
+                    </button>
+                    <!-- Error State for Code -->
+                    <div id="codeError" class="qr-error" style="display: none; margin-top: 10px;">
+                        <p class="qr-error-text" style="color: #ef4444; font-size: 0.9rem;">Gagal memuat kode</p>
+                        <button class="qr-retry-btn" onclick="retryPairingCode()">🔄 Ambil Kode Baru</button>
+                    </div>
+                </div>
+
+                <div class="step-guide">
+                    <h3>📖 Ikuti Langkah Ini:</h3>
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-text">Buka <span class="emph">WhatsApp</span> di HP Anda</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-text">Klik titik 3 <span class="emph">(⋮)</span> pojok kanan atas</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-text">Pilih <span class="emph">"Perangkat Tertaut"</span></div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-text">Tap <span class="emph">"Tautkan Perangkat"</span></div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-text">Pilih <span class="emph">"Tautkan dengan nomor HP"</span><br>(BUKAN scan
+                            QR!)</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">6</div>
+                        <div class="step-text">Masukkan kode di atas: <span class="emph" id="codeHint">----</span></div>
+                    </div>
+                </div>
+
+                <div class="status-badge status-loading" id="statusBadge">
+                    <span class="spin">⏳</span>
+                    <span id="statusText">Menunggu Anda memasukkan kode...</span>
+                </div>
+
+                <div class="footer-hint">
+                    💡 <strong>Punya 2 device?</strong>
+                    <a href="#" onclick="switchMethod('qr')">Ganti ke QR Scan</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Area -->
+        <div id="successArea" style="display: none; text-align: center;">
+            <div class="success-icon">🎉</div>
+            <h1>Bot Berhasil Aktif!</h1>
+            <p class="subtitle">Selamat! WhatsApp Anda sekarang menjadi asisten otomatis bisnis Anda</p>
+
+            <div
+                style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); padding: 20px; border-radius: 16px; margin: 20px 0;">
+                <p style="color: #10b981; font-weight: 600; margin-bottom: 10px;">✨ Apa selanjutnya?</p>
+                <p style="color: #cbd5e1; font-size: 0.9rem; text-align: left; line-height: 1.6;">
+                    ✅ Cek pesan masuk di WhatsApp<br>
+                    ✅ Atur produk & harga di Dashboard<br>
+                    ✅ Bagikan nomor ke pelanggan!
+                </p>
+            </div>
+
+            <a href="/dashboard" class="btn-dashboard">
+                MASUK KE DASHBOARD →
+            </a>
+        </div>
+    </div>
+
+    <script>
+        window.WA_SESSION_NAME = "{{ session_name }}";
+        window.WA_PHONE_NUMBER = "{{ phone_number }}";
+        window.WA_ORDER_ID = "{{ order_id }}";
+    </script>
+    <script src="{{ url_for('static', filename='js/success_pairing.js') }}"></script>
+</body>
+
+</html>

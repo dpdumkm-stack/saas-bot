@@ -1,0 +1,292 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Daftar Pesanan</h1>
+            <p class="text-gray-500">Kelola pesanan dan verifikasi pembayaran</p>
+        </div>
+        <a href="/dashboard/orders?status=MANUAL_REVIEW"
+            class="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-yellow-200 transition-colors">
+            ⚠️ Butuh Review
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex gap-2 overflow-x-auto pb-4 mb-6">
+        <a href="{{ url_for('dashboard.orders', status='ALL') }}"
+            class="px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors
+           {{ 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' if filter == 'ALL' else 'bg-white text-gray-600 hover:bg-gray-50' }}">
+            Semua
+        </a>
+        <a href="{{ url_for('dashboard.orders', status='PENDING') }}"
+            class="px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors
+           {{ 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' if filter == 'PENDING' else 'bg-white text-gray-600 hover:bg-gray-50' }}">
+            Menunggu Bayar
+        </a>
+        <a href="{{ url_for('dashboard.orders', status='MANUAL_REVIEW') }}"
+            class="px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors
+           {{ 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' if filter == 'MANUAL_REVIEW' else 'bg-white text-gray-600 hover:bg-gray-50' }}">
+            Perlu Review
+        </a>
+        <a href="{{ url_for('dashboard.orders', status='PAID') }}"
+            class="px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors
+           {{ 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' if filter == 'PAID' else 'bg-white text-gray-600 hover:bg-gray-50' }}">
+            Selesai (Paid)
+        </a>
+        <a href="{{ url_for('dashboard.orders', status='CANCELLED') }}"
+            class="px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors
+           {{ 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' if filter == 'CANCELLED' else 'bg-white text-gray-600 hover:bg-gray-50' }}">
+            Dibatalkan
+        </a>
+    </div>
+
+    <!-- Orders List -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 uppercase">
+                        <th class="px-6 py-4 font-semibold">Order ID</th>
+                        <th class="px-6 py-4 font-semibold">Pelanggan</th>
+                        <th class="px-6 py-4 font-semibold">Nominal</th>
+                        <th class="px-6 py-4 font-semibold">Status</th>
+                        <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    {% for order in orders %}
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-gray-900">#{{ order.order_id }}</div>
+                            <div class="text-xs text-gray-400">{{ order.created_at.strftime('%d %b %H:%M') }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-gray-800">{{ order.customer_hp }}</div>
+                            <div class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 inline-block mt-1">
+                                via WhatsApp
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-gray-800">Rp {{ "{:,.0f}".format(order.nominal) }}</div>
+                            {% if order.detected_amount %}
+                            <div class="text-xs text-gray-400 mt-1">
+                                Deteksi: Rp {{ "{:,.0f}".format(order.detected_amount) }}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if order.status == 'PAID' %}
+                            <span
+                                class="px-3 py-1 rounded-full bg-green-50 text-green-600 text-xs font-semibold">Lunas</span>
+                            {% elif order.status == 'CANCELLED' %}
+                            <span
+                                class="px-3 py-1 rounded-full bg-red-50 text-red-600 text-xs font-semibold">Batal</span>
+                            {% elif order.verification_status == 'MANUAL_REVIEW' %}
+                            <span
+                                class="px-3 py-1 rounded-full bg-yellow-50 text-yellow-600 text-xs font-semibold animate-pulse">Perlu
+                                Review</span>
+                            {% else %}
+                            <span
+                                class="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold">Pending</span>
+                            {% endif %}
+
+                            {% if order.confidence_score %}
+                            <div class="mt-2 text-xs flex items-center gap-1">
+                                <span
+                                    class="{{ 'text-green-600' if order.confidence_score > 80 else 'text-yellow-600' }} font-medium">
+                                    AI: {{ order.confidence_score }}%
+                                </span>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick='openDetailModal({{ order|tojson|safe }})'
+                                class="px-4 py-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-600 text-sm font-medium transition-colors">
+                                Detail
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+                            <div class="text-4xl mb-3">📦</div>
+                            <p>Belum ada pesanan ditemukan.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- VERIFICATION MODAL -->
+<div id="verifyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden transform transition-all">
+        <!-- Header -->
+        <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="font-bold text-gray-800">Verifikasi Pembayaran</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">&times;</button>
+        </div>
+
+        <!-- Content -->
+        <div class="p-6 max-h-[70vh] overflow-y-auto">
+            <!-- Payment Proof Image -->
+            <div id="modalProofImg"
+                class="w-full h-48 bg-gray-100 rounded-xl mb-6 flex items-center justify-center overflow-hidden border border-gray-200 relative group">
+                <span class="text-gray-400 text-sm">Tidak ada gambar</span>
+                <!-- Image injected via JS -->
+                <a id="modalImgLink" href="#" target="_blank"
+                    class="hidden absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span class="bg-white/90 px-3 py-1 rounded-lg text-xs font-semibold shadow-sm">Buka Gambar ↗</span>
+                </a>
+            </div>
+
+            <!-- Analysis Card -->
+            <div class="bg-blue-50 rounded-xl p-4 border border-blue-100 mb-6">
+                <div class="flex justify-between items-start mb-2">
+                    <p class="text-xs font-bold text-blue-600 uppercase tracking-wide">Analisa AI</p>
+                    <span id="modalScore"
+                        class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-lg">95%</span>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <p class="text-gray-500 text-xs">Bank Terdeteksi</p>
+                        <p id="modalBank" class="font-semibold text-gray-800">-</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-xs">Jumlah Terdeteksi</p>
+                        <p id="modalAmount" class="font-semibold text-gray-800">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fraud Hints -->
+            <div id="modalFraud" class="hidden bg-red-50 rounded-xl p-4 border border-red-100 mb-6">
+                <p class="text-xs font-bold text-red-600 uppercase tracking-wide mb-2">Peringatan Kecurangan</p>
+                <ul id="modalFraudList" class="text-sm text-red-700 list-disc ml-4 space-y-1"></ul>
+            </div>
+
+            <!-- Order Details -->
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between py-2 border-b border-gray-50">
+                    <span class="text-gray-500">Order ID</span>
+                    <span id="modalOrderId" class="font-medium text-gray-900">-</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-50">
+                    <span class="text-gray-500">Tagihan</span>
+                    <span id="modalNominal" class="font-bold text-gray-900">-</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-50">
+                    <span class="text-gray-500">Status Saat Ini</span>
+                    <span id="modalStatus" class="font-medium text-gray-900">-</span>
+                </div>
+            </div>
+
+            <!-- Notes Input -->
+            <div class="mt-4">
+                <label class="block text-xs font-medium text-gray-700 mb-1">Catatan (Optional)</label>
+                <textarea id="modalNotes" rows="2"
+                    class="w-full px-3 py-2 rounded-lg bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-sm"
+                    placeholder="Contoh: Kurang bayar 500 rupiah..."></textarea>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex gap-3">
+            <button onclick="submitVerify('REJECT')"
+                class="flex-1 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 font-semibold transition-colors text-sm">
+                Tolak
+            </button>
+            <button onclick="submitVerify('APPROVE')"
+                class="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg shadow-blue-500/30 transition-all text-sm">
+                Konfirmasi Lunas
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentOrderId = null;
+
+    function openDetailModal(order) {
+        currentOrderId = order.order_id;
+        document.getElementById('verifyModal').classList.remove('hidden');
+
+        // Populate Data
+        document.getElementById('modalOrderId').innerText = '#' + order.order_id;
+        document.getElementById('modalNominal').innerText = 'Rp ' + order.nominal.toLocaleString();
+        document.getElementById('modalStatus').innerText = order.verification_status || order.status;
+
+        // AI Data
+        document.getElementById('modalScore').innerText = (order.confidence_score || 0) + '%';
+        document.getElementById('modalBank').innerText = order.detected_bank || '-';
+        document.getElementById('modalAmount').innerText = order.detected_amount ? 'Rp ' + order.detected_amount.toLocaleString() : '-';
+
+        // Fraud Hints
+        const fraudDiv = document.getElementById('modalFraud');
+        const fraudList = document.getElementById('modalFraudList');
+        if (order.fraud_hints_json) {
+            try {
+                const hints = JSON.parse(order.fraud_hints_json);
+                if (hints.length > 0) {
+                    fraudList.innerHTML = hints.map(h => `<li>${h}</li>`).join('');
+                    fraudDiv.classList.remove('hidden');
+                } else {
+                    fraudDiv.classList.add('hidden');
+                }
+            } catch (e) { fraudDiv.classList.add('hidden'); }
+        } else {
+            fraudDiv.classList.add('hidden');
+        }
+
+        // Image
+        const imgDiv = document.getElementById('modalProofImg');
+        const imgLink = document.getElementById('modalImgLink');
+        console.log(order); // Debug
+        // Note: Currently Transaction model has payment_proof_url? Let's check models.py
+        // Update: Transaction model DOES have payment_proof_url in models.py line 89.
+        if (order.payment_proof_url) {
+            imgDiv.innerHTML = `<img src="${order.payment_proof_url}" class="w-full h-full object-cover">`;
+            imgDiv.appendChild(imgLink);
+            imgLink.href = order.payment_proof_url;
+            imgLink.classList.remove('hidden');
+        } else {
+            imgDiv.innerHTML = '<span class="text-gray-400 text-sm">Tidak ada gambar</span>';
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('verifyModal').classList.add('hidden');
+    }
+
+    async function submitVerify(action) {
+        if (!currentOrderId) return;
+
+        const notes = document.getElementById('modalNotes').value;
+        const btnText = action === 'APPROVE' ? 'Memproses...' : 'Menolak...';
+        // Simple UI feedback, better to use loading state on buttons
+
+        try {
+            const res = await fetch(`/dashboard/orders/${currentOrderId}/verify`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, notes })
+            });
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                window.location.reload();
+            } else {
+                alert('Gagal: ' + data.message);
+            }
+        } catch (e) {
+            alert('Error: ' + e);
+        }
+    }
+</script>
+{% endblock %}

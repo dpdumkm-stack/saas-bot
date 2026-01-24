@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar - Wali.ai</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/register_trial.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <h1 id="pageTitle">🚀 Daftar Sekarang</h1>
+        <p class="subtitle" id="pageSubtitle">Dapatkan bot AI untuk bisnis Anda</p>
+
+        <div id="alertBox" style="display: none;"></div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="storeName">Nama Toko / Bisnis</label>
+                <input type="text" id="storeName" placeholder="Contoh: Toko Baju Mitra" required>
+            </div>
+
+            <div class="form-group">
+                <label for="storePhone">Nomor WhatsApp</label>
+                <input type="tel" id="storePhone" placeholder="08123456789" required>
+            </div>
+
+            <div class="form-group">
+                <label for="storeCategory">Kategori Bisnis</label>
+                <select id="storeCategory" required>
+                    <option value="">Pilih Kategori</option>
+                    <option value="Fashion">Fashion & Pakaian</option>
+                    <option value="Makanan">Makanan & Minuman</option>
+                    <option value="Elektronik">Elektronik</option>
+                    <option value="Kesehatan">Kesehatan & Kecantikan</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+            </div>
+
+            <div class="device-section">
+                <h3>❓ Untuk aktivasi bot nanti:</h3>
+                <div class="device-options">
+                    <div class="device-option">
+                        <input type="radio" name="deviceCount" id="twoDevices" value="qr" checked>
+                        <label for="twoDevices" class="device-card">
+                            <div class="radio-circle"></div>
+                            <div class="device-info">
+                                <div class="device-title">
+                                    <span class="device-emoji">📱💻</span>
+                                    Saya punya 2 device (HP + Laptop/HP lain)
+                                </div>
+                                <div class="device-method">→ Pakai QR Scan (Cepat - 30 detik)</div>
+                                <div class="device-desc">Seperti WhatsApp Web. Scan QR, langsung terhubung!</div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="device-option">
+                        <input type="radio" name="deviceCount" id="oneDevice" value="code">
+                        <label for="oneDevice" class="device-card">
+                            <div class="radio-circle"></div>
+                            <div class="device-info">
+                                <div class="device-title">
+                                    <span class="device-emoji">📱</span>
+                                    Saya cuma punya 1 HP
+                                </div>
+                                <div class="device-method">→ Pakai Kode 8 Angka (Mudah - 1 menit)</div>
+                                <div class="device-desc">Masukkan kode langsung di HP Anda. Tidak perlu device kedua!
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="btnSubmit">
+                ✨ Aktifkan Bot Gratis Sekarang
+            </button>
+        </form>
+
+        <p style="text-align: center; color: #94a3b8; font-size: 0.8rem; margin-top: 20px;">
+            ✅ Gratis 3 Hari • ✅ Tidak Perlu Kartu Kredit • ✅ Bisa Dibatalkan Kapan Saja
+        </p>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/register_trial.js') }}"></script>
+</body>
+
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Wali.ai Template Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+
+        .card p {
+            font-size: 14px;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+
+        .card .meta {
+            font-size: 12px;
+            opacity: 0.5;
+            margin-top: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 16px;
+            width: 500px;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 Template Management</h1>
+            <button class="btn" onclick="openModal()">+ Template Baru</button>
+        </div>
+
+        <div class="grid" id="templateGrid">
+            <!-- Templates loaded via JS -->
+        </div>
+    </div>
+
+    <!-- Modal Create/Edit -->
+    <div id="templateModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Tambah Template</h2>
+            <input type="text" id="tplName" placeholder="Nama Template (misal: Promo Gajian)">
+            <select id="tplCategory">
+                <option value="promo">Promosi</option>
+                <option value="announcement">Pengumuman</option>
+                <option value="reminder">Reminder</option>
+                <option value="other">Lainnya</option>
+            </select>
+            <textarea id="tplMessage" rows="5" placeholder="Isi Pesan..."></textarea>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn" onclick="saveTemplate()" style="flex: 1;">Simpan</button>
+                <button class="btn" onclick="closeModal()"
+                    style="background: transparent; border: 1px solid #334155;">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadTemplates() {
+            const res = await fetch('/superadmin/api/templates');
+            const templates = await res.json();
+            const grid = document.getElementById('templateGrid');
+            grid.innerHTML = templates.map(t => `
+                <div class="card">
+                    <h3>${t.name}</h3>
+                    <span style="font-size: 10px; background: rgba(99,102,241,0.2); padding: 2px 8px; border-radius: 20px; color: #818cf8;">${t.category.toUpperCase()}</span>
+                    <p>${t.message.substring(0, 100)}${t.message.length > 100 ? '...' : ''}</p>
+                    <div class="meta">Digunakan: ${t.use_count}x | Terakhir: ${t.last_used || 'Belum pernah'}</div>
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button onclick="editTemplate(${t.id})" style="background: none; border: none; color: #818cf8; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
+                        <button onclick="deleteTemplate(${t.id})" style="background: none; border: none; color: #ef4444; cursor: pointer;"><i class="fas fa-trash"></i> Hapus</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openModal() { document.getElementById('templateModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('templateModal').style.display = 'none'; }
+
+        async function saveTemplate() {
+            const payload = {
+                name: document.getElementById('tplName').value,
+                category: document.getElementById('tplCategory').value,
+                message: document.getElementById('tplMessage').value
+            };
+            await fetch('/superadmin/api/templates', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            closeModal();
+            loadTemplates();
+        }
+
+        async function deleteTemplate(id) {
+            if (confirm("Hapus template ini?")) {
+                await fetch(\`/superadmin/api/templates/\${id}\`, { method: 'DELETE' });
+                loadTemplates();
+            }
+        }
+
+        loadTemplates();
+    </script>
+</body>
+
+</html>
