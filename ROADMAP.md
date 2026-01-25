@@ -185,6 +185,51 @@
 
 ---
 
+### 4.1 📢 Broadcast Enhancement Roadmap (2026) 🔥 HIGH
+
+**Status:** Planned (Strategy Documented)  
+**Effort:** 3-6 months (Phased)  
+**Impact:** Very High (Transform to Smart Engagement Platform)
+
+> 📋 **Full Strategy**: See [Broadcast Enhancement Strategy 2026](file:///C:/Users/p/.gemini/antigravity/brain/970d7788-ee2d-4260-8914-7ced872254a9/broadcast_enhancement_strategy_2026.md)
+
+**Current State (v3.9.7)**:
+- ✅ Context-Aware Reply & Safety Fuse
+- ✅ Self-Healing Workers & Circuit Breaker
+- ✅ CSV/TXT Upload & Phone Normalization
+- ✅ Scheduled Broadcasts with timezone support
+
+**Planned Evolution (3 Phases)**:
+
+#### Phase 1: Quick Wins (2 weeks) 🔥🔥🔥
+- [ ] **Engagement Analytics Dashboard** - Track reply rate, conversion, best times
+- [ ] **Merge Tags (Personalization)** - {{name}}, {{product}}, dynamic content
+- [ ] **Template Library** - Pre-made templates untuk common scenarios
+
+**Success Target**: 80% merchant adoption, +15% conversion rate
+
+#### Phase 2: High Value (4 weeks) 🔥
+- [ ] **Media Broadcast** - Image, video, document support
+- [ ] **Smart Segmentation** - Active, Dormant, High-Value, VIP, Custom segments
+- [ ] **A/B Testing** - Split test variants, auto-select winner
+
+**Success Target**: Media 2x reply rate, 30% spam reduction
+
+#### Phase 3: Advanced (8 weeks) ⚡
+- [ ] **Best Time To Send (AI)** - ML-powered timing suggestion
+- [ ] **Link Tracking & QR Code** - Click analytics, offline-to-online bridge
+- [ ] **Automated Response Flow** - Trigger-based automation for post-broadcast
+
+**Success Target**: +25% engagement, 60% automation rate
+
+**Why High Priority:** Transform broadcast dari "mass messaging tool" menjadi intelligent engagement platform dengan measurable ROI.
+
+**Dependencies:** Cloud Storage (untuk media), Analytics database (untuk tracking)
+
+**Timeline**: Q1-Q3 2026
+
+---
+
 ### 5. 👥 Multi-Agent Support ⚡ MEDIUM
 
 **Status:** Not Started
