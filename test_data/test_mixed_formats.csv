@@ -1,0 +1,6 @@
+phone,name
+08123456789,Format_08
++6281234567890,Format_+62
+62-812-345-6789,Format_Dash
+62 812 345 6789,Format_Space
+(62) 812-345-6789,Format_Paren
